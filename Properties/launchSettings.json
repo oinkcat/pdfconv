@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "pdfconv": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\softc\\Desktop\\test.pdf\""
+    }
+  }
+}
