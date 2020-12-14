@@ -9,11 +9,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/bin/Debug/netcoreapp3.1/pdfconv.dll",
-            "args": [ "/home/igor/sssu068.pdf" ],
+            "args": [ "./TestPdf/testpdf.pdf" ],
             "cwd": "${workspaceFolder}",
-            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
         },

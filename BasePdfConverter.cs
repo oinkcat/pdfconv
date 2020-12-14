@@ -16,7 +16,7 @@ namespace PdfConverter
 
             if(await CheckCanConvert(realFilePath))
             {
-                return await ConvertFileCore(filePath);
+                return await ConvertFileCore(realFilePath);
             }
             else
             {
