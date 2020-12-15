@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace PdfConverter
+namespace PdfConverter.Simple
 {
     /// <summary>
     /// Part of PDF document's content

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Simple.Parsing
+namespace PdfConverter.Simple.Parsing
 {
     /// <summary>
     /// Object attributes parser
@@ -17,21 +17,11 @@ namespace Simple.Parsing
         };
     	
         /// <summary>
-        /// Parse attributes string
+        /// Parse attribute string to tokens
         /// </summary>
-        /// <param name="attrString">Object attributes string</param>
-    	public void Parse(string attrString)
-    	{
-    		Console.WriteLine(attrString);
-    		
-    		foreach(var (pos, type, value) in NextToken(attrString))
-    		{
-    			Console.WriteLine($"{pos} - {type}: {value}");
-    		}
-    	}
-    	
-        // Get next token in attributes list
-    	private IEnumerable<(int, int, string)> NextToken(string inString)
+        /// <param name="inString">Object attribute string</param>
+        /// <returns>Token sequence</returns>
+    	public IEnumerable<Token> Tokenize(string inString)
     	{
     		int nextPos = 0;
     		
@@ -39,31 +29,28 @@ namespace Simple.Parsing
     		{
     			int minPos = inString.Length;
     			int minType = -1;
-    			int typeIdx = 0;
     			
-	    		foreach(string dl in delimiters)
+	    		for(int tokIdx = 0; tokIdx < delimiters.Length; tokIdx++)
 		    	{
-		    		int pos = inString.IndexOf(dl, nextPos);
+		    		int pos = inString.IndexOf(delimiters[tokIdx], nextPos);
 		    		if(pos > -1)
 		    		{
 		    			if(pos < minPos)
 		    			{
 		    				minPos = pos;
-		    				minType = typeIdx;
+		    				minType = tokIdx;
 		    			}
 		    		}
-		    		
-		    		typeIdx++;
 		    	}
 		    	
 		    	if(nextPos < minPos)
 		    	{
 		    		string idValue = inString.Substring(nextPos, minPos - nextPos);
-		    		yield return (nextPos, -1, idValue);
+		    		yield return Token.CreateIdentifier(idValue);
 		    	}
 		    	
 		    	string delim = delimiters[minType];
-				yield return (minPos, minType, delim);
+				yield return new Token((TokenType)minType, delim);
 		    	nextPos = minPos + delim.Length;
     		}
     	}
