@@ -19,6 +19,6 @@ namespace PdfConverter.Simple.Parsing
         Delimiter,
         Number,
         Id,
-        End
+        EndOfLine
     }
 }

@@ -4,55 +4,109 @@ using System.Collections.Generic;
 namespace PdfConverter.Simple.Parsing
 {
     /// <summary>
-    /// Object attributes parser
+    /// Parses object attribute string
     /// </summary>
     public class AttributesParser
     {
-        private static string[] delimiters = {
-    		"<<", ">>",
-            "<", ">",
-    		"(", ")",
-    		"[", "]",
-    		" ", "/"
-        };
-    	
+        private Dictionary<string, object> parsedAttributes;
+
+        private int openGroupLevel;
+
+        private bool parsingCompleted;
+
+        private IEnumerator<Token> tokenSource;
+
+        private string currentChunk;
+
         /// <summary>
-        /// Parse attribute string to tokens
+        /// Get parse results
         /// </summary>
-        /// <param name="inString">Object attribute string</param>
-        /// <returns>Token sequence</returns>
-    	public IEnumerable<Token> Tokenize(string inString)
-    	{
-    		int nextPos = 0;
-    		
-    		while(nextPos < inString.Length)
-    		{
-    			int minPos = inString.Length;
-    			int minType = -1;
-    			
-	    		for(int tokIdx = 0; tokIdx < delimiters.Length; tokIdx++)
-		    	{
-		    		int pos = inString.IndexOf(delimiters[tokIdx], nextPos);
-		    		if(pos > -1)
-		    		{
-		    			if(pos < minPos)
-		    			{
-		    				minPos = pos;
-		    				minType = tokIdx;
-		    			}
-		    		}
-		    	}
-		    	
-		    	if(nextPos < minPos)
-		    	{
-		    		string idValue = inString.Substring(nextPos, minPos - nextPos);
-		    		yield return Token.CreateIdentifier(idValue);
-		    	}
-		    	
-		    	string delim = delimiters[minType];
-				yield return new Token((TokenType)minType, delim);
-		    	nextPos = minPos + delim.Length;
-    		}
-    	}
+        /// <returns>Parsed attributes</returns>
+        public Dictionary<string, object> GetParsedAttributes()
+        {
+            return parsingCompleted
+                ? new Dictionary<string, object>(parsedAttributes)
+                : null;
+        }
+
+        /// <summary>
+        /// Parse next chunk of string
+        /// </summary>
+        /// <param name="inString">String to parse</param>
+        /// <returns>Can continue parse</returns>
+        public bool FeedNextChunk(string inString)
+        {
+            // TODO: Full implementation
+
+            if(parsingCompleted) { return false; }
+
+            currentChunk = inString;
+
+            var token = GetNextToken();
+
+            // Very basic parsing
+            while(token.Type != TokenType.GroupEnd && token.Type != TokenType.EndOfLine)
+            {
+                if(token.Type == TokenType.Delimiter)
+                {
+                    string attribName = GetNextToken().Value as string;
+
+                    var valueOrDlToken = GetNextToken();
+                    if(valueOrDlToken.Type != TokenType.Delimiter)
+                    {
+                        parsedAttributes.Add(attribName, null);
+                    }
+                    else
+                    {
+                        var attribValue = GetNextToken().Value;
+                        parsedAttributes.Add(attribName, attribValue);
+                    }
+                }
+
+                token = GetNextToken();
+            }
+
+            parsingCompleted = token.Type == TokenType.GroupEnd;
+
+            return !parsingCompleted;
+        }
+
+        // Get next token in stream
+        private Token GetNextToken()
+        {
+            if(tokenSource == null)
+            {
+                var tokenizer = new AttributesTokenizer();
+                tokenSource = tokenizer.Tokenize(currentChunk).GetEnumerator();
+            }
+
+            if(tokenSource.MoveNext())
+            {
+                return tokenSource.Current;
+            }
+            else
+            {
+                tokenSource.Dispose();
+                tokenSource = null;
+
+                return Token.EOL;
+            }
+        }
+
+        /// <summary>
+        /// Reset parser state
+        /// </summary>
+        public void Reset()
+        {
+            parsedAttributes.Clear();
+            parsingCompleted = false;
+            openGroupLevel = 0;
+            currentChunk = null;
+        }
+
+        public AttributesParser()
+        {
+            parsedAttributes = new Dictionary<string, object>();
+        }
     }
 }
