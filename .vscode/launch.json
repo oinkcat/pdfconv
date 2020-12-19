@@ -9,9 +9,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/netcoreapp3.1/pdfconv.dll",
+            "program": "${workspaceFolder}/pdfconv/bin/Debug/netcoreapp3.1/pdfconv.dll",
             "args": [ "./TestPdf/testpdf.pdf" ],
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/pdfconv",
             "console": "internalConsole",
             "stopAtEntry": false
         },

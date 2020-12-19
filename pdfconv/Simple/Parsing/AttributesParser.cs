@@ -54,7 +54,12 @@ namespace PdfConverter.Simple.Parsing
                     var valueOrDlToken = GetNextToken();
                     if(valueOrDlToken.Type != TokenType.Delimiter)
                     {
-                        parsedAttributes.Add(attribName, null);
+                        object attribValue = valueOrDlToken switch {
+                            { Type: TokenType.Number } => (double)valueOrDlToken.Value,
+                            { Type: TokenType.Id } => (string)valueOrDlToken.Value,
+                            _ => null
+                        };
+                        parsedAttributes.Add(attribName, attribValue);
                     }
                     else
                     {
