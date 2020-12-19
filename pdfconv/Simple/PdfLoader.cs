@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using PdfConverter.Simple.Parsing;
 
 using MyReader = PdfConverter.Simple.UnbufferedStreamReader;
 
@@ -18,7 +19,8 @@ namespace PdfConverter.Simple
         private const string ObjStart = " obj";
         private const string ObjEnd = "endobj";
         private const string StreamStart = "stream";
-        private const string CompressedObjFlag = "/FlateDecode";
+        private const string AttribGroupStart = "<<";
+        private const string AttribGroupEnd = ">>";
 
         private Stream inputFile;
 
@@ -69,44 +71,52 @@ namespace PdfConverter.Simple
 
         private async Task<PdfObject> LoadObject(int id, MyReader reader)
         {
-            var newObject = new PdfObject(id);
-            bool compressed = false;
+            var attribParser = new AttributesParser();
 
-            // Object characteristics or first line of the body
-            string firstLine = await reader.ReadLineAsync();
+            // Read object attribute group
+            string attribLine = await reader.ReadLineAsync();
 
-            if(firstLine.StartsWith("<<") && firstLine.EndsWith(">>"))
+            if(attribLine.StartsWith(AttribGroupStart))
             {
-                compressed = firstLine.Contains(CompressedObjFlag);
+                bool needMoreInput = false;
+                do
+                {
+                    needMoreInput = attribParser.FeedNextChunk(attribLine);
+                    if(!needMoreInput) { break; }
+
+                    attribLine = await reader.ReadLineAsync();
+                }
+                while(needMoreInput);
             }
 
-            // Read object body
-            if(compressed)
-            {
-                var lengthParams = firstLine.Split('/').Last().Split();
-                bool isRefToLength = lengthParams.Last() == "R";
+            var newObject = new PdfObject(id, attribParser.GetParsedAttributes());
 
+            // Read object body
+            if(newObject.GetAttributeValue("Filter")?.Equals("FlateDecode") ?? false)
+            {
                 string streamToken = await reader.ReadLineAsync();
                 if(streamToken != StreamStart) { throw new InvalidDataException(); }
+                
+                var lengthAttribVal = newObject.GetAttributeValue("Length");
 
-                if(isRefToLength)
+                if(lengthAttribVal is IList<object> lengthRefParams)
                 {
                     // Object body should be loaded later
-                    int referencedId = int.Parse(lengthParams[1]);
+                    int referencedId = (int)(double)lengthRefParams[0];
                     references.Add(id, (referencedId, reader.BaseStream.Position));
                 }
                 else
                 {
                     // Load body from binary compressed data
-                    int size = int.Parse(lengthParams[1].Trim('>'));
+                    int size = (int)(double)lengthAttribVal;
                     var content = await ReadCompressedContent(size);
                     newObject.Contents.AddRange(content);
                 }
             }
-            else
+            else if(attribLine != AttribGroupEnd)
             {
                 // Load body from string data
-                for(string line = firstLine; 
+                for(string line = attribLine; 
                     line != ObjEnd; 
                     line = await reader.ReadLineAsync())
                 {

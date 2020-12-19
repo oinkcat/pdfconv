@@ -38,7 +38,7 @@ namespace PdfConverter.Simple
                 buffer.Append((char)current);
             }
 
-            if(Read() != '\n')
+            if(Read() != '\n' && !EndOfStream)
             {
                 BaseStream.Seek(-1, SeekOrigin.Current);
             }

@@ -1,4 +1,4 @@
-using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace PdfConverter.Simple.Parsing
@@ -10,11 +10,11 @@ namespace PdfConverter.Simple.Parsing
     {
         private Dictionary<string, object> parsedAttributes;
 
-        private int openGroupLevel;
-
         private bool parsingCompleted;
 
         private IEnumerator<Token> tokenSource;
+
+        private Token pushedBackToken;
 
         private string currentChunk;
 
@@ -54,12 +54,9 @@ namespace PdfConverter.Simple.Parsing
                     var valueOrDlToken = GetNextToken();
                     if(valueOrDlToken.Type != TokenType.Delimiter)
                     {
-                        object attribValue = valueOrDlToken switch {
-                            { Type: TokenType.Number } => (double)valueOrDlToken.Value,
-                            { Type: TokenType.Id } => (string)valueOrDlToken.Value,
-                            _ => null
-                        };
-                        parsedAttributes.Add(attribName, attribValue);
+                        PushBackToken(valueOrDlToken);
+                        var inlineAttributeValues = ReadInlineAttributeValues();
+                        parsedAttributes.Add(attribName, inlineAttributeValues);
                     }
                     else
                     {
@@ -79,12 +76,21 @@ namespace PdfConverter.Simple.Parsing
         // Get next token in stream
         private Token GetNextToken()
         {
-            if(tokenSource == null)
+            if(pushedBackToken != null)
             {
-                var tokenizer = new AttributesTokenizer();
-                tokenSource = tokenizer.Tokenize(currentChunk).GetEnumerator();
+                var tokenToRetry = pushedBackToken;
+                pushedBackToken = null;
+                return tokenToRetry;
             }
 
+            if(tokenSource == null)
+            {
+                tokenSource = new AttributesTokenizer()
+                    .Tokenize(currentChunk)
+                    .GetEnumerator();
+            }
+
+            // Yield next token
             if(tokenSource.MoveNext())
             {
                 return tokenSource.Current;
@@ -98,6 +104,40 @@ namespace PdfConverter.Simple.Parsing
             }
         }
 
+        private object ReadInlineAttributeValues()
+        {
+            Token nextToken = null;
+            var inlineAttributes = new List<object>();
+
+            var terminalTokens = new HashSet<TokenType>(new TokenType[] {
+                TokenType.Delimiter, TokenType.EndOfLine, TokenType.GroupEnd
+            });
+
+            do
+            {
+                nextToken = GetNextToken();
+                object attribValue = nextToken switch {
+                    { Type: TokenType.Number } => (double)nextToken.Value,
+                    { Type: TokenType.Id } => (string)nextToken.Value,
+                    _ => null
+                };
+                
+                if(attribValue != null)
+                {
+                    inlineAttributes.Add(attribValue);
+                }
+            }
+            while(!terminalTokens.Contains(nextToken.Type));
+
+            PushBackToken(nextToken);
+
+            return (inlineAttributes.Count > 1)
+                ? inlineAttributes
+                : inlineAttributes.FirstOrDefault();
+        }
+
+        private void PushBackToken(Token token) => pushedBackToken = token;
+
         /// <summary>
         /// Reset parser state
         /// </summary>
@@ -105,8 +145,8 @@ namespace PdfConverter.Simple.Parsing
         {
             parsedAttributes.Clear();
             parsingCompleted = false;
-            openGroupLevel = 0;
             currentChunk = null;
+            pushedBackToken = null;
         }
 
         public AttributesParser()
