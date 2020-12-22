@@ -993,19 +993,14 @@ Object ID: 21
 Object ID: 22
 
 Object ID: 1
-<</Type/Page/Parent 10 0 R/Resources 22 0 R/MediaBox[0 0 595.275590551181 841.861417322835]/Group<</S/Transparency/CS/DeviceRGB/I true>>/Contents 2 0 R>>
 
 Object ID: 4
-<</Type/Page/Parent 10 0 R/Resources 22 0 R/MediaBox[0 0 595.275590551181 841.861417322835]/Group<</S/Transparency/CS/DeviceRGB/I true>>/Contents 5 0 R>>
 
 Object ID: 7
-<</Type/Page/Parent 10 0 R/Resources 22 0 R/MediaBox[0 0 595.275590551181 841.861417322835]/Group<</S/Transparency/CS/DeviceRGB/I true>>/Contents 8 0 R>>
 
 Object ID: 10
-/Count 3>>
 
 Object ID: 23
 
 Object ID: 24
-/CreationDate(D:20201214171012+03'00')>>
 

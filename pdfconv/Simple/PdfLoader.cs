@@ -113,7 +113,7 @@ namespace PdfConverter.Simple
                     newObject.Contents.AddRange(content);
                 }
             }
-            else if(attribLine != AttribGroupEnd)
+            else if(!attribLine.EndsWith(AttribGroupEnd))
             {
                 // Load body from string data
                 for(string line = attribLine; 
