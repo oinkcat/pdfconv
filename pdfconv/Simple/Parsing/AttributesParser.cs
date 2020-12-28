@@ -45,7 +45,7 @@ namespace PdfConverter.Simple.Parsing
             var token = GetNextToken();
 
             // Very basic parsing
-            while(token.Type != TokenType.GroupEnd && token.Type != TokenType.EndOfLine)
+            while(token.Type != TokenType.DictEnd && token.Type != TokenType.EndOfLine)
             {
                 if(token.Type == TokenType.Delimiter)
                 {
@@ -68,7 +68,7 @@ namespace PdfConverter.Simple.Parsing
                 token = GetNextToken();
             }
 
-            parsingCompleted = token.Type == TokenType.GroupEnd;
+            parsingCompleted = token.Type == TokenType.DictEnd;
 
             return !parsingCompleted;
         }
@@ -110,7 +110,7 @@ namespace PdfConverter.Simple.Parsing
             var inlineAttributes = new List<object>();
 
             var terminalTokens = new HashSet<TokenType>(new TokenType[] {
-                TokenType.Delimiter, TokenType.EndOfLine, TokenType.GroupEnd
+                TokenType.Delimiter, TokenType.EndOfLine, TokenType.DictEnd
             });
 
             do

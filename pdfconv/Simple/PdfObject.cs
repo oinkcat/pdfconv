@@ -6,7 +6,7 @@ namespace PdfConverter.Simple
     /// <summary>
     /// Part of PDF document's content
     /// </summary>
-    internal class PdfObject
+    public class PdfObject
     {
         // Object's attributes
         private Dictionary<string, object> attributes;
@@ -16,12 +16,15 @@ namespace PdfConverter.Simple
         /// </summary>
         public int Id { get; }
 
-        public bool IsReferenceOnly { get; set; }
-
         /// <summary>
         /// Object contents
         /// </summary>
         public List<string> Contents { get; }
+
+        /// <summary>
+        /// Object type
+        /// </summary>
+        public string Type => GetAttributeValue("Type") as string;
 
         /// <summary>
         /// Check if object contains specified attribute

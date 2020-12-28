@@ -7,8 +7,8 @@ namespace PdfConverter.Simple.Parsing
     /// </summary>
     public enum TokenType
     {
-        GroupStart,
-        GroupEnd,
+        DictStart,
+        DictEnd,
         StringStart,
         StringEnd,
         OpenBrace,

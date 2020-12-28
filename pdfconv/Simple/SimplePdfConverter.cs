@@ -8,7 +8,7 @@ namespace PdfConverter.Simple
     /// <summary>
     /// Converts PDF filed using external program
     /// <summary>
-    internal class SimplePdfConverter : BasePdfConverter
+    public class SimplePdfConverter : BasePdfConverter
     {
         private string directoryPath;
         private string baseName;
@@ -37,9 +37,7 @@ namespace PdfConverter.Simple
 
             foreach(var obj in pdf.Objects)
             {
-                if(obj.IsReferenceOnly) { continue; }
-                
-                lines.Add($"Object ID: {obj.Id}");
+                lines.Add($"Object ID: {obj.Id}, type: {obj.Type}");
                 lines.AddRange(obj.Contents);
             }
 

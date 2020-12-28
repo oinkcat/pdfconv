@@ -14,7 +14,7 @@ namespace PdfConverter.Simple
     /// <summary>
     /// Loads PDF file
     /// </summary>
-    internal class PdfLoader
+    public class PdfLoader
     {
         private const string ObjStart = " obj";
         private const string ObjEnd = "endobj";
@@ -64,8 +64,6 @@ namespace PdfConverter.Simple
                 var objContents = await ReadCompressedContent(objSize);
                 objContents.Add(String.Empty);
                 objects[objId].Contents.AddRange(objContents);
-
-                objects[refId].IsReferenceOnly = true;
             }
         }
 

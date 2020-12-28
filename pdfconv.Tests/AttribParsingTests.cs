@@ -33,8 +33,8 @@ namespace PdfConverter.Tests
             var attribTokens = attribTokener.Tokenize(BasicString);
 
             Assert.NotEmpty(attribTokens);
-            Assert.Equal(TokenType.GroupStart, attribTokens.First().Type);
-            Assert.Equal(TokenType.GroupEnd, attribTokens.Last().Type);
+            Assert.Equal(TokenType.DictStart, attribTokens.First().Type);
+            Assert.Equal(TokenType.DictEnd, attribTokens.Last().Type);
 
             // Check absence of whitespace tokens
             Assert.False(attribTokens.Any(t => t.Type == TokenType.Space));
