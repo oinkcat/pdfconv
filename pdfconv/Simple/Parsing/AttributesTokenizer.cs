@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Collections.Generic;
 
 namespace PdfConverter.Simple.Parsing
@@ -70,7 +71,10 @@ namespace PdfConverter.Simple.Parsing
 		// Get identifier or number from given string
 		private Token ParseIdOrNumber(string idOrNum)
 		{
-			return double.TryParse(idOrNum, out double number)
+			return double.TryParse(idOrNum, 
+								   NumberStyles.AllowDecimalPoint, 
+								   CultureInfo.InvariantCulture, 
+								   out double number)
 				? Token.CreateNumber(number)
 				: Token.CreateIdentifier(idOrNum);
 		}
