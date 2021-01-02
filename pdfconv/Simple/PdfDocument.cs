@@ -44,7 +44,7 @@ namespace PdfConverter.Simple
         public PdfObject GetObjectByRef(IList<object> reference, int offset = 0)
         {
             int objIdListIdx = offset * 3;
-            int referencedObjId = (int)reference[objIdListIdx];
+            int referencedObjId = (int)(double)reference[objIdListIdx];
 
             return GetObjectById(referencedObjId);
         }

@@ -43,6 +43,11 @@ namespace PdfConverter.Simple
             return attributes.TryGetValue(name, out object value) ? value : null;
         }
 
+        public T GetAttributeValue<T>(string name)
+        {
+            return (T)GetAttributeValue(name);
+        }
+
         public PdfObject(int id, Dictionary<string, object> attrs)
         {
             Id = id;
