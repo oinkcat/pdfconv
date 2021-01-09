@@ -18,6 +18,8 @@ namespace PdfConverter.Simple.Parsing
 
         private string currentChunk;
 
+        private int nestedDictLevel;
+
         /// <summary>
         /// Get parse results
         /// </summary>
@@ -54,6 +56,11 @@ namespace PdfConverter.Simple.Parsing
                     var valueOrDlToken = GetNextToken();
                     if(valueOrDlToken.Type != TokenType.Delimiter)
                     {
+                        if(valueOrDlToken.Type == TokenType.DictStart)
+                        {
+                            nestedDictLevel++;
+                        }
+
                         PushBackToken(valueOrDlToken);
                         var inlineAttributeValues = ReadInlineAttributeValues();
                         parsedAttributes.Add(attribName, inlineAttributeValues);
@@ -68,7 +75,12 @@ namespace PdfConverter.Simple.Parsing
                 token = GetNextToken();
             }
 
-            parsingCompleted = token.Type == TokenType.DictEnd;
+            if(token.Type == TokenType.DictEnd)
+            {
+                nestedDictLevel--;
+            }
+
+            parsingCompleted = token.Type == TokenType.DictEnd && nestedDictLevel < 0;
 
             return !parsingCompleted;
         }
@@ -147,6 +159,7 @@ namespace PdfConverter.Simple.Parsing
             parsingCompleted = false;
             currentChunk = null;
             pushedBackToken = null;
+            nestedDictLevel = 0;
         }
 
         public AttributesParser()

@@ -38,7 +38,16 @@ namespace PdfConverter.Simple
             foreach(var obj in pdf.Objects)
             {
                 lines.Add($"Object ID: {obj.Id}, type: {obj.Type}");
-                lines.AddRange(obj.Contents);
+                
+                if(obj.HasStream)
+                {
+                    lines.Add("<< Binary Content >>");
+                    lines.Add(String.Empty);
+                }
+                else
+                {
+                    lines.AddRange(obj.TextContent);
+                }
             }
 
             return lines;

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Collections.Generic;
 
 namespace PdfConverter.Simple
@@ -17,9 +18,20 @@ namespace PdfConverter.Simple
         public int Id { get; }
 
         /// <summary>
-        /// Object contents
+        /// Object's binary content
         /// </summary>
-        public List<string> Contents { get; }
+        /// <value></value>
+        public byte[] BinaryContent { get; set; }
+
+        /// <summary>
+        /// Object's text content
+        /// </summary>
+        public List<string> TextContent { get; }
+
+        /// <summary>
+        /// Object body contains binary data
+        /// </summary>
+        public bool HasStream => BinaryContent != null;
 
         /// <summary>
         /// Object type
@@ -43,15 +55,30 @@ namespace PdfConverter.Simple
             return attributes.TryGetValue(name, out object value) ? value : null;
         }
 
+        /// <summary>
+        /// Get value of attribute with specified type and name
+        /// </summary>
+        /// <param name="name">Attribute name</param>
+        /// <typeparam name="T">Attribute type</typeparam>
+        /// <returns>Attribute value of desired type</returns>
         public T GetAttributeValue<T>(string name)
         {
             return (T)GetAttributeValue(name);
         }
 
+        /// <summary>
+        /// Convert binary content to text lines
+        /// </summary>
+        public void ConvertContentToText()
+        {
+            var textLines = Encoding.ASCII.GetString(BinaryContent).Split('\n');
+            TextContent.AddRange(textLines);
+        }
+
         public PdfObject(int id, Dictionary<string, object> attrs)
         {
             Id = id;
-            Contents = new List<string>();
+            TextContent = new List<string>();
             attributes = attrs ?? new Dictionary<string, object>();
         }
     }

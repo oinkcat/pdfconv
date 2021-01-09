@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Text;
 using System.IO;
 using System.IO.Compression;
 using System.Collections.Generic;
@@ -41,7 +40,6 @@ namespace PdfConverter.Simple
                     {
                         int objId = int.Parse(line.Split()[0]);
                         var pdfObj = await LoadObject(objId, reader);
-                        pdfObj.Contents.Add(String.Empty);
                         objects.Add(objId, pdfObj);
                     }
                 }
@@ -58,12 +56,11 @@ namespace PdfConverter.Simple
             foreach(int objId in references.Keys)
             {
                 (int refId, long objStartPos) = references[objId];
-                int objSize = int.Parse(objects[refId].Contents[0]);
+                int objSize = int.Parse(objects[refId].TextContent[0]);
                 
                 inputFile.Seek(objStartPos, SeekOrigin.Begin);
-                var objContents = await ReadCompressedContent(objSize);
-                objContents.Add(String.Empty);
-                objects[objId].Contents.AddRange(objContents);
+                var objContent = await ReadCompressedContent(objSize);
+                objects[objId].BinaryContent = objContent;
             }
         }
 
@@ -108,7 +105,7 @@ namespace PdfConverter.Simple
                     // Load body from binary compressed data
                     int size = (int)(double)lengthAttribVal;
                     var content = await ReadCompressedContent(size);
-                    newObject.Contents.AddRange(content);
+                    newObject.BinaryContent = content;
                 }
             }
             else if(!attribLine.EndsWith(AttribGroupEnd))
@@ -118,14 +115,14 @@ namespace PdfConverter.Simple
                     line != ObjEnd; 
                     line = await reader.ReadLineAsync())
                 {
-                    newObject.Contents.Add(line);
+                    newObject.TextContent.Add(line);
                 }
             }
 
             return newObject;
         }
 
-        private async Task<IList<string>> ReadCompressedContent(int length)
+        private async Task<byte[]> ReadCompressedContent(int length)
         {
             var compressedBytes = new byte[length];
             await inputFile.ReadAsync(compressedBytes, 0, length);
@@ -135,8 +132,7 @@ namespace PdfConverter.Simple
             using var decodedData = new MemoryStream(length);
             decoder.CopyTo(decodedData);
 
-            var binaryData = decodedData.GetBuffer();
-            return new List<string> { Encoding.ASCII.GetString(binaryData) };
+            return decodedData.GetBuffer();
         }
 
         public PdfLoader(Stream inFile)

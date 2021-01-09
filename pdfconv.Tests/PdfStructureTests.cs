@@ -1,15 +1,14 @@
 using System.IO;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 using PdfConverter.Simple;
 
 namespace PdfConverter.Tests
 {
     /// <summary>
-    /// Pdf documents loading tests
+    /// Pdf documents object structure tests
     /// </summary>
-    public class PdfLoadingTests
+    public class PdfStructureTests
     {
         private const string TestPdfPath = "../../../../pdfconv/TestPdf/testpdf.pdf";
 
@@ -83,7 +82,51 @@ namespace PdfConverter.Tests
             }
         }
 
-        public PdfLoadingTests()
+        /// <summary>
+        /// Test access to PDF objects which are necessary for text extraction
+        /// </summary>
+        [Fact]
+        public void TestPdfRequiredObjects()
+        {
+            var pagesObj = TestDocument.GetObjectsByType("Pages")[0];
+            var resourcesRef = pagesObj.GetAttributeValue<List<object>>("Resources");
+            var resourceObj = TestDocument.GetObjectByRef(resourcesRef);
+
+            // Font objects
+            var fontObjs = TestDocument.GetObjectsByType("Font");
+            Assert.NotEmpty(fontObjs);
+
+            foreach(var fontObj in fontObjs)
+            {
+                var toUnicodeRef = fontObj.GetAttributeValue<List<object>>("ToUnicode");
+                var toUnicodeObj = TestDocument.GetObjectByRef(toUnicodeRef);
+                Assert.True(toUnicodeObj.HasStream);
+
+                toUnicodeObj.ConvertContentToText();
+                Assert.NotEmpty(toUnicodeObj.TextContent);
+            }
+
+            // Page objects
+            var pageObjs = TestDocument.GetObjectsByType("Page");
+            Assert.Equal(3, pageObjs.Count);
+
+            foreach(var page in TestDocument.GetObjectsByType("Page"))
+            {
+                var pageResourcesRef = page.GetAttributeValue<List<object>>("Resources");
+                Assert.NotNull(pageResourcesRef);
+
+                var pageResourceObj = TestDocument.GetObjectByRef(pageResourcesRef);
+                Assert.Same(resourceObj, pageResourceObj);
+
+                var pageContentsRef = page.GetAttributeValue<List<object>>("Contents");
+                Assert.NotNull(pageContentsRef);
+
+                var contents = TestDocument.GetObjectByRef(pageContentsRef);
+                Assert.True(contents.HasStream);
+            }
+        }
+
+        public PdfStructureTests()
         {
             using var testDocStream = File.OpenRead(TestPdfPath);
             var loader = new PdfLoader(testDocStream);
