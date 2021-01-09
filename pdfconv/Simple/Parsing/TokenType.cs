@@ -16,9 +16,10 @@ namespace PdfConverter.Simple.Parsing
         OpenSquareBrace,
         CloseSquareBrace,
         Space,
-        Delimiter,
+        Slash,
         Number,
         Id,
+        Name,
         HexString,
         EndOfLine
     }

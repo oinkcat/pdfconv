@@ -49,26 +49,25 @@ namespace PdfConverter.Simple.Parsing
             // Very basic parsing
             while(token.Type != TokenType.DictEnd && token.Type != TokenType.EndOfLine)
             {
-                if(token.Type == TokenType.Delimiter)
+                if(token.Type == TokenType.Name)
                 {
-                    string attribName = GetNextToken().Value as string;
+                    string attribName = token.Value as string;
 
-                    var valueOrDlToken = GetNextToken();
-                    if(valueOrDlToken.Type != TokenType.Delimiter)
+                    var valueOrNameToken = GetNextToken();
+                    if(valueOrNameToken.Type != TokenType.Name)
                     {
-                        if(valueOrDlToken.Type == TokenType.DictStart)
+                        if(valueOrNameToken.Type == TokenType.DictStart)
                         {
                             nestedDictLevel++;
                         }
 
-                        PushBackToken(valueOrDlToken);
+                        PushBackToken(valueOrNameToken);
                         var inlineAttributeValues = ReadInlineAttributeValues();
                         parsedAttributes.Add(attribName, inlineAttributeValues);
                     }
                     else
                     {
-                        var attribValue = GetNextToken().Value;
-                        parsedAttributes.Add(attribName, attribValue);
+                        parsedAttributes.Add(attribName, valueOrNameToken.Value);
                     }
                 }
 
@@ -122,7 +121,7 @@ namespace PdfConverter.Simple.Parsing
             var inlineAttributes = new List<object>();
 
             var terminalTokens = new HashSet<TokenType>(new TokenType[] {
-                TokenType.Delimiter, TokenType.EndOfLine, TokenType.DictEnd
+                TokenType.Name, TokenType.EndOfLine, TokenType.DictEnd
             });
 
             do

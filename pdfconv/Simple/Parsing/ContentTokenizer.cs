@@ -83,9 +83,9 @@ namespace PdfConverter.Simple.Parsing
 			int tokenType,
 			out string tokenValue
 		) {				
-			var delimiterToken = (TokenType)tokenType;
+			var delimiterTokenType = (TokenType)tokenType;
 
-			if(delimiterToken == TokenType.HexStringStart)
+			if(delimiterTokenType == TokenType.HexStringStart)
 			{
 				// Next token is a hexadecimal string literal
 				int endTokenTypeIdx = (int)TokenType.HexStringEnd;
@@ -98,11 +98,18 @@ namespace PdfConverter.Simple.Parsing
 				string hexString = tokenValue.Substring(1, tokenValue.Length - 2);
 				return new Token(TokenType.HexString, hexString);
 			}
-			else if(delimiterToken != TokenType.Space)
+			else if(delimiterTokenType == TokenType.Slash)
+			{
+				// Next token is a "name"
+				(int nameEndPos, _) = GetNextTokenStartPos(inString, tokenPos + 1);
+				tokenValue = inString.Substring(tokenPos, nameEndPos - tokenPos);
+				return new Token(TokenType.Name, tokenValue.Substring(1));
+			}
+			else if(delimiterTokenType != TokenType.Space)
 			{
 				// Next token is delimiter except of space
 				tokenValue = delimiters[tokenType];
-				return new Token(delimiterToken, tokenValue);
+				return new Token(delimiterTokenType, tokenValue);
 			}
 			else
 			{
