@@ -9,8 +9,8 @@ namespace PdfConverter.Simple.Parsing
     {
         DictStart,
         DictEnd,
-        StringStart,
-        StringEnd,
+        HexStringStart,
+        HexStringEnd,
         OpenBrace,
         CloseBrace,
         OpenSquareBrace,
@@ -19,6 +19,7 @@ namespace PdfConverter.Simple.Parsing
         Delimiter,
         Number,
         Id,
+        HexString,
         EndOfLine
     }
 }

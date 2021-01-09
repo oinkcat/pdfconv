@@ -97,7 +97,7 @@ namespace PdfConverter.Simple.Parsing
 
             if(tokenSource == null)
             {
-                tokenSource = new AttributesTokenizer()
+                tokenSource = new ContentTokenizer()
                     .Tokenize(currentChunk)
                     .GetEnumerator();
             }

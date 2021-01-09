@@ -29,7 +29,7 @@ namespace PdfConverter.Tests
         [Fact]
         public void TestTokenizeAttribs()
         {            
-            var attribTokener = new AttributesTokenizer();
+            var attribTokener = new ContentTokenizer();
             var attribTokens = attribTokener.Tokenize(BasicString);
 
             Assert.NotEmpty(attribTokens);
