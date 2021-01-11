@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using PdfConverter.Simple.Structure;
 
 namespace PdfConverter.Simple
 {
@@ -31,7 +32,7 @@ namespace PdfConverter.Simple
             return await Task.FromResult(true);
         }
 
-        private IList<string> ConvertToText(PdfDocument pdf)
+        private IList<string> ConvertToText(PdfObjectRoot pdf)
         {
             var lines = new List<string>();
 

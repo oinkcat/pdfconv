@@ -2,12 +2,12 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace PdfConverter.Simple
+namespace PdfConverter.Simple.Structure
 {
     /// <summary>
-    /// Represents document's content
+    /// Contains all PDF document's content objects
     /// </summary>
-    public class PdfDocument
+    public class PdfObjectRoot
     {
         /// <summary>
         /// Pdf content objects
@@ -54,12 +54,12 @@ namespace PdfConverter.Simple
         /// </summary>
         public PdfObject Catalog { get; }
 
-        public PdfDocument()
+        public PdfObjectRoot()
         {
             Objects = new List<PdfObject>();
         }
 
-        public PdfDocument(IEnumerable<PdfObject> objects)
+        public PdfObjectRoot(IEnumerable<PdfObject> objects)
         {
             Objects = objects.OrderBy(o => o.Id).ToList();
             Catalog = GetObjectsByType("Catalog").FirstOrDefault();

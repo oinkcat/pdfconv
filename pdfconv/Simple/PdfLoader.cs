@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PdfConverter.Simple.Parsing;
+using PdfConverter.Simple.Structure;
 
 using MyReader = PdfConverter.Simple.UnbufferedStreamReader;
 
@@ -27,7 +28,7 @@ namespace PdfConverter.Simple
 
         private Dictionary<int, (int, long)> references;
 
-        public async Task<PdfDocument> Load()
+        public async Task<PdfObjectRoot> Load()
         {
             // Load objects initially
             using(var reader = new MyReader(inputFile))
@@ -48,7 +49,7 @@ namespace PdfConverter.Simple
                 await LoadReferencedObjects();
             }
 
-            return new PdfDocument(objects.Values);
+            return new PdfObjectRoot(objects.Values);
         }
 
         private async Task LoadReferencedObjects()

@@ -37,7 +37,8 @@ namespace PdfConverter.Tests
             Assert.Equal(TokenType.DictEnd, attribTokens.Last().Type);
 
             // Check absence of whitespace tokens
-            Assert.False(attribTokens.Any(t => t.Type == TokenType.Space));
+            bool hasSpaceTokens = attribTokens.Any(t => t.Type == TokenType.Space);
+            Assert.False(hasSpaceTokens);
         }
 
         /// <summary>

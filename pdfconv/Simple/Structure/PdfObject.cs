@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 
-namespace PdfConverter.Simple
+namespace PdfConverter.Simple.Structure
 {
     /// <summary>
     /// Part of PDF document's content

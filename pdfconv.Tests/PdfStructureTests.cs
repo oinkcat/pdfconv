@@ -2,6 +2,7 @@ using System.IO;
 using System.Collections.Generic;
 using Xunit;
 using PdfConverter.Simple;
+using PdfConverter.Simple.Structure;
 
 namespace PdfConverter.Tests
 {
@@ -12,7 +13,7 @@ namespace PdfConverter.Tests
     {
         private const string TestPdfPath = "../../../../pdfconv/TestPdf/testpdf.pdf";
 
-        private PdfDocument TestDocument;
+        private PdfObjectRoot TestDocument;
 
         /// <summary>
         /// Test access to PDF root and pages objects
