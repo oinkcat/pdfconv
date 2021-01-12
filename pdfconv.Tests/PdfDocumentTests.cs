@@ -11,7 +11,7 @@ namespace PdfConverter.Tests
     /// </summary>
     public class PdfDocumentTests
     {
-        private const string TestPdfPath = "../../../../pdfconv/TestPdf/testpdf.pdf";
+        private const string TestPdfPath = "../../../TestPdf/testpdf.pdf";
 
         // Loaded PDF object root
         private PdfObjectRoot TestObjRoot;
@@ -38,7 +38,7 @@ namespace PdfConverter.Tests
             var textLines = pdfDoc.ExtractTextContent();
 
             Assert.NotEmpty(textLines);
-            Assert.NotNull(textLines[0]);
+            Assert.Equal("Test Document", textLines[0]);
         }
 
         public PdfDocumentTests()

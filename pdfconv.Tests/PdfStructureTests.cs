@@ -11,7 +11,7 @@ namespace PdfConverter.Tests
     /// </summary>
     public class PdfStructureTests
     {
-        private const string TestPdfPath = "../../../../pdfconv/TestPdf/testpdf.pdf";
+        private const string TestPdfPath = "../../../TestPdf/testpdf.pdf";
 
         private PdfObjectRoot TestObjRoot;
 
