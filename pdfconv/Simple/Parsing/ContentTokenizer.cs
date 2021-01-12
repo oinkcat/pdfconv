@@ -123,7 +123,7 @@ namespace PdfConverter.Simple.Parsing
 		private Token ParseIdOrNumber(string idOrNum)
 		{
 			return double.TryParse(idOrNum, 
-								   NumberStyles.AllowDecimalPoint, 
+								   NumberStyles.Number, 
 								   CultureInfo.InvariantCulture, 
 								   out double number)
 				? Token.CreateNumber(number)

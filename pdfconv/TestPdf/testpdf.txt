@@ -1,43 +1,136 @@
-Object ID: 1, type: Page
-Object ID: 2, type: 
-<< Binary Content >>
-
-Object ID: 3, type: 
-1805
-Object ID: 4, type: Page
-Object ID: 5, type: 
-<< Binary Content >>
-
-Object ID: 6, type: 
-1597
-Object ID: 7, type: Page
-Object ID: 8, type: 
-<< Binary Content >>
-
-Object ID: 9, type: 
-1229
-Object ID: 10, type: Pages
-Object ID: 11, type: 
-<< Binary Content >>
-
-Object ID: 12, type: 
-5537
-Object ID: 13, type: FontDescriptor
-Object ID: 14, type: 
-<< Binary Content >>
-
-Object ID: 15, type: Font
-Object ID: 16, type: 
-<< Binary Content >>
-
-Object ID: 17, type: 
-15108
-Object ID: 18, type: FontDescriptor
-Object ID: 19, type: 
-<< Binary Content >>
-
-Object ID: 20, type: Font
-Object ID: 21, type: 
-Object ID: 22, type: 
-Object ID: 23, type: Catalog
-Object ID: 24, type: 
+Test Document
+[ 1131.032844] usb 3-4: 
+RTL8192EU MAC: 50:3e:aa:b0:5b:04
+[ 1131.032846] usb 3-4: rtl8xxxu: Loading firmware rtlwifi/rtl8192eu_nic.bin
+[ 1131.032898] usb 3-4: Firmware revision 19.0 (signature 0x92e1)
+[ 1131.841033] usb 3-4: rtl8192eu_rx_iqk_path_b: Path B RX IQK failed!
+[ 1131.864772] usb 3-4: rtl8192eu_rx_iqk_path_b: Path B RX IQK failed!
+[ 1131.927387] usb 3-4: rtl8192eu_rx_iqk_path_b: Path B RX IQK failed!
+[ 1131.951104] usb 3-4: rtl8192eu_rx_iqk_path_b: Path B RX IQK failed!
+[ 1131.965917] rtl8xxxu 3-4:1.0 wlx503eaab05b04: renamed from wlan0
+[ 1140.940201] usb 3-4: USB disconnect, device number 4
+[ 1141.056520] usb 3-4: rtl8192eu_active_to_emu: Disabling MAC timed out
+[ 1141.056523] usb 3-4: disconnecting
+[ 1153.461214] usb 1-1.6: new high-speed USB device number 8 using ehci-pci
+[ 1153.570338] usb 1-1.6: New USB device found, idVendor=2357, idProduct=0109,
+bcdDevice= 2.00
+[ 1153.570342] usb 1-1.6: New USB device strings: Mfr=1, Product=2,
+SerialNumber=3
+[ 1153.570344] usb 1-1.6: Product: 802.11n NIC
+[ 1153.570346] usb 1-1.6: Manufacturer: Realtek
+[ 1153.570349] usb 1-1.6: SerialNumber: 00e04c000001
+[ 1153.740706] usb 1-1.6: Vendor: Realtek
+[ 1153.740708] usb 1-1.6: Product: 802.11n NI
+[ 1153.740710] usb 1-1.6: Serial:
+[ 1153.740712] usb 1-1.6: rtl8192eu_parse_efuse: dumping efuse (0x200 bytes):
+[ 1153.740714] usb 1-1.6: 00: 29 81 00 7c 01 40 03 00
+[ 1153.740715] usb 1-1.6: 08: 40 74 04 50 14 00 00 00
+[ 1153.740717] usb 1-1.6: 10: 26 26 26 27 27 27 29 29
+[ 1153.740718] usb 1-1.6: 18: 29 2a 2a f2 ef ef ff ff
+[ 1153.740720] usb 1-1.6: 20: ff ff ff ff ff ff ff ff
+[ 1153.740721] usb 1-1.6: 28: ff ff ff ff ff ff ff ff
+[ 1153.740722] usb 1-1.6: 30: ff ff ff ff ff ff ff ff
+[ 1153.740724] usb 1-1.6: 38: ff ff 29 29 29 29 29 29
+[ 1153.740725] usb 1-1.6: 40: 2c 2c 2c 2b 2b f2 ef ef
+[ 1153.740727] usb 1-1.6: 48: ff ff ff ff ff ff ff ff
+[ 1153.740728] usb 1-1.6: 50: ff ff ff ff ff ff ff ff
+[ 1153.740729] usb 1-1.6: 58: ff ff ff ff ff ff ff ff
+[ 1153.740731] usb 1-1.6: 60: ff ff ff ff ff ff ff ff
+[ 1153.740732] usb 1-1.6: 68: ff ff ff ff ff ff ff ff
+[ 1153.740733] usb 1-1.6: 70: ff ff ff ff ff ff ff ff
+[ 1153.740735] usb 1-1.6: 78: ff ff ff ff ff ff ff ff
+[ 1153.740736] usb 1-1.6: 80: ff ff ff ff ff ff ff ff
+[ 1153.740738] usb 1-1.6: 88: ff ff ff ff ff ff ff ff
+[ 1153.740739] usb 1-1.6: 90: ff ff ff ff ff ff ff ff
+[ 1153.740740] usb 1-1.6: 98: ff ff ff ff ff ff ff ff
+[ 1153.740742] usb 1-1.6: a0: ff ff ff ff ff ff ff ff
+[ 1153.740743] usb 1-1.6: a8: ff ff ff ff ff ff ff ff
+[ 1153.740744] usb 1-1.6: b0: ff ff ff ff ff ff ff ff
+[ 1153.740746] usb 1-1.6: b8: a1 22 1f 00 00 00 ff ff
+[ 1153.740747] usb 1-1.6: c0: ff 01 00 10 00 00 00 ff
+[ 1153.740749] usb 1-1.6: c8: 00 00 ff ff ff ff ff ff
+[ 1153.740750] usb 1-1.6: d0: 57 23 09 01 e7 47 02 50
+[ 1153.740751] usb 1-1.6: d8: 3e aa b0 5b 04 0a 03 52
+[ 1153.740753] usb 1-1.6: e0: 65 61 6c 74 65 6b 20 0e
+[ 1153.740754] usb 1-1.6: e8: 03 38 30 32 2e 31 31 6e
+[ 1153.740755] usb 1-1.6: f0: 20 4e 49 43 20 00 00 ff
+[ 1153.740757] usb 1-1.6: f8: ff ff ff ff ff ff ff ff
+[ 1153.740758] usb 1-1.6: 100: ff ff ff ff ff ff ff ff
+[ 1153.740760] usb 1-1.6: 108: ff ff ff ff ff ff ff ff
+[ 1153.740761] usb 1-1.6: 110: ff ff ff ff ff ff ff 0d
+[ 1153.740762] usb 1-1.6: 118: 03 00 05 00 30 00 00 00[ 1153.740764] usb 1-1.6: 120: 00 93 ff ff ff
+ff ff ff
+[ 1153.740765] usb 1-1.6: 128: ff ff ff ff ff ff ff ff
+[ 1153.740766] usb 1-1.6: 130: f6 a8 98 2d 03 92 98 00
+[ 1153.740768] usb 1-1.6: 138: fc 8c 00 11 9b 44 02 0a
+[ 1153.740769] usb 1-1.6: 140: ff ff ff ff ff ff ff ff
+[ 1153.740771] usb 1-1.6: 148: ff ff ff ff ff ff ff ff
+[ 1153.740772] usb 1-1.6: 150: ff ff ff ff ff ff ff ff
+[ 1153.740773] usb 1-1.6: 158: ff ff ff ff ff ff ff ff
+[ 1153.740775] usb 1-1.6: 160: ff ff ff ff ff ff ff ff
+[ 1153.740776] usb 1-1.6: 168: ff ff ff ff ff ff ff ff
+[ 1153.740777] usb 1-1.6: 170: ff ff ff ff ff ff ff ff
+[ 1153.740779] usb 1-1.6: 178: ff ff ff ff ff ff ff ff
+[ 1153.740780] usb 1-1.6: 180: ff ff ff ff ff ff ff ff
+[ 1153.740782] usb 1-1.6: 188: ff ff ff ff ff ff ff ff
+[ 1153.740783] usb 1-1.6: 190: ff ff ff ff ff ff ff ff
+[ 1153.740784] usb 1-1.6: 198: ff ff ff ff ff ff ff ff
+[ 1153.740786] usb 1-1.6: 1a0: ff ff ff ff ff ff ff ff
+[ 1153.740787] usb 1-1.6: 1a8: ff ff ff ff ff ff ff ff
+[ 1153.740788] usb 1-1.6: 1b0: ff ff ff ff ff ff ff ff
+[ 1153.740790] usb 1-1.6: 1b8: ff ff ff ff ff ff ff ff
+[ 1153.740791] usb 1-1.6: 1c0: ff ff ff ff ff ff ff ff
+[ 1153.740793] usb 1-1.6: 1c8: ff ff ff ff ff ff ff ff
+[ 1153.740794] usb 1-1.6: 1d0: ff ff ff ff ff ff ff ff
+[ 1153.740795] usb 1-1.6: 1d8: ff ff ff ff ff ff ff ff
+[ 1153.740797] usb 1-1.6: 1e0: ff ff ff ff ff ff ff ff
+[ 1153.740798] usb 1-1.6: 1e8: ff ff ff ff ff ff ff ff
+[ 1153.740800] usb 1-1.6: 1f0: ff ff ff ff ff ff ff ff
+[ 1153.740801] usb 1-1.6: 1f8: ff ff ff ff ff ff ff ff
+[ 1153.740804] usb 1-1.6: 
+RTL8192EU rev B (SMIC) 2T2R, TX queues 3, WiFi=1,
+BT=0, GPS=0, HI PA=0
+[ 1153.740806] usb 1-1.6: RTL8192EU MAC: 50:3e:aa:b0:5b:04
+[ 1153.740808] usb 1-1.6: rtl8xxxu: Loading firmware rtlwifi/rtl8192eu_nic.bin
+[ 1153.740868] usb 1-1.6: Firmware revision 19.0 (signature 0x92e1)
+[ 1154.725202] usb 1-1.6: rtl8192eu_rx_iqk_path_b: Path B RX IQK failed!
+[ 1154.757447] usb 1-1.6: rtl8192eu_rx_iqk_path_b: Path B RX IQK failed!
+[ 1154.966716] rtl8xxxu 1-1.6:1.0 wlx503eaab05b04: renamed from wlan0
+[ 1172.982282] wlx503eaab05b04: authenticate with 14:2e:5e:a0:54:80
+[ 1173.004120] wlx503eaab05b04: send auth to 14:2e:5e:a0:54:80 (try 1/3)
+[ 1173.006085] wlx503eaab05b04: authenticated
+[ 1173.006241] wlx503eaab05b04: associating with AP with corrupt probe response
+[ 1173.013204] wlx503eaab05b04: associate with 14:2e:5e:a0:54:80 (try 1/3)
+[ 1173.019966] wlx503eaab05b04: RX AssocResp from 14:2e:5e:a0:54:80
+(capab=0x1431 status=0 aid=2)
+[ 1173.021719] usb 1-1.6: rtl8xxxu_bss_info_changed: HT supported
+[ 1173.023335] wlx503eaab05b04: associated
+[ 1173.042323] wlx503eaab05b04: Limiting TX power to 20 (20 - 0) dBm as
+advertised by 14:2e:5e:a0:54:80
+[ 1173.144098] IPv6: ADDRCONF(NETDEV_CHANGE): wlx503eaab05b04: link becomes
+ready
+[ 2945.187507] kauditd_printk_skb: 27 callbacks suppressed
+[ 2945.187540] audit: type=1400 audit(1582488399.545:39): apparmor="ALLOWED"
+operation="open" profile="libreoffice-soffice" name="/usr/share/drirc.d/00-mesa-
+defaults.conf" pid=5192 comm="soffice.bin" requested_mask="r" denied_mask="r"
+fsuid=1000 ouid=0
+[ 2945.189578] audit: type=1400 audit(1582488399.545:40): apparmor="ALLOWED"
+operation="open" profile="libreoffice-soffice" name="/usr/share/drirc.d/00-mesa-
+defaults.conf" pid=5192 comm="soffice.bin" requested_mask="r" denied_mask="r"
+fsuid=1000 ouid=0
+[ 2945.234821] audit: type=1400 audit(1582488399.593:41): apparmor="ALLOWED"
+operation="open" profile="libreoffice-soffice" name="/usr/share/drirc.d/00-mesa-
+defaults.conf" pid=5192 comm="soffice.bin" requested_mask="r" denied_mask="r"
+fsuid=1000 ouid=0
+[ 2945.235739] audit: type=1400 audit(1582488399.593:42): apparmor="ALLOWED"
+operation="open" profile="libreoffice-soffice" name="/usr/share/drirc.d/00-mesa-defaults.conf" 
+pid=5192 comm="soffice.bin" requested_mask="r" denied_mask="r"
+fsuid=1000 ouid=0
+[ 2945.236689] audit: type=1400 audit(1582488399.593:43): apparmor="ALLOWED"
+operation="open" profile="libreoffice-soffice" name="/usr/share/drirc.d/00-mesa-
+defaults.conf" pid=5192 comm="soffice.bin" requested_mask="r" denied_mask="r"
+fsuid=1000 ouid=0
+[ 2945.238978] audit: type=1400 audit(1582488399.597:44): apparmor="ALLOWED"
+operation="open" profile="libreoffice-soffice"
+name="/home/igor/.cache/mesa_shader_cache/index" pid=5192 comm="soffice.bin"
+requested_mask="wrc" denied_mask="wrc" fsuid=1000 ouid=1000

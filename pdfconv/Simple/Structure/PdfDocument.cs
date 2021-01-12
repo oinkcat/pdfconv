@@ -1,68 +1,97 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 
 namespace PdfConverter.Simple.Structure
 {
     /// <summary>
-    /// Contains all PDF document's content objects
+    /// Represents PDF document
     /// </summary>
-    public class PdfObjectRoot
+    public class PdfDocument
     {
         /// <summary>
-        /// Pdf content objects
+        /// PDF objects root
         /// </summary>
-        public IList<PdfObject> Objects { get; }
+        public PdfObjectRoot ObjectRoot { get; private set; }
 
         /// <summary>
-        /// Get Pdf object by it's ID
+        /// Document's pages
         /// </summary>
-        /// <param name="id">Object identifier</param>
-        /// <returns>Pdf object with specified ID</returns>
-        public PdfObject GetObjectById(int id) => Objects[id - 1];
+        public IList<PdfPage> Pages { get; private set; }
 
         /// <summary>
-        /// Get list of objects of specified type
+        /// Document's fonts
         /// </summary>
-        /// <param name="type">Object type to find</param>
-        /// <returns>Found objects</returns>
-        public IList<PdfObject> GetObjectsByType(string type)
+        public IDictionary<string, PdfFont> Fonts { get; private set; }
+
+        /// <summary>
+        /// Extract text from PDF document's pages
+        /// </summary>
+        /// <returns>Extracted text lines</returns>
+        public List<string> ExtractTextContent()
         {
-            const string TypeAttribName = "Type";
+            var extractedTextLines = new List<string>();
+            var textExtractor = new PdfTextExtractor(this);
+            textExtractor.ExtractText(extractedTextLines);
 
-            return Objects
-                .Where(o => o.GetAttributeValue(TypeAttribName) as string == type)
-                .ToList();
+            return extractedTextLines;
         }
 
-        /// <summary>
-        /// Get Pdf object by reference descriptor
-        /// </summary>
-        /// <param name="reference">Reference descriptor</param>
-        /// <param name="offset">Number of reference in list</param>
-        /// <returns>Object referenced by it's descriptor</returns>
-        public PdfObject GetObjectByRef(IList<object> reference, int offset = 0)
+        // Fill document contents from PDF root object
+        private void PopulateContents()
         {
-            int objIdListIdx = offset * 3;
-            int referencedObjId = (int)(double)reference[objIdListIdx];
+            var pagesObj = ObjectRoot.GetObjectsByType("Pages")[0];
 
-            return GetObjectById(referencedObjId);
+            PopulatePages(pagesObj);
+            PopulateFonts(pagesObj);
         }
 
-        /// <summary>
-        /// Pdf root object
-        /// </summary>
-        public PdfObject Catalog { get; }
-
-        public PdfObjectRoot()
+        // Fill pages information
+        private void PopulatePages(PdfObject pagesObj)
         {
-            Objects = new List<PdfObject>();
+            int pagesCount = (int)pagesObj.GetAttributeValue<double>("Count");
+            var pageRefs = pagesObj.GetAttributeValue<IList<object>>("Kids");
+
+            for(int i = 0; i < pagesCount; i++)
+            {
+                var singlePageObj = ObjectRoot.GetObjectByRef(pageRefs, i);
+                Pages.Add(new PdfPage(this, singlePageObj));
+            }
         }
 
-        public PdfObjectRoot(IEnumerable<PdfObject> objects)
+        // Fill font information
+        private void PopulateFonts(PdfObject pagesObj)
+        {            
+            var resourcesRef = pagesObj.GetAttributeValue<IList<object>>("Resources");
+            var resourcesObj = ObjectRoot.GetObjectByRef(resourcesRef);
+            var fontResRef = resourcesObj.GetAttributeValue<IList<object>>("Font");
+            var fontResObj = ObjectRoot.GetObjectByRef(fontResRef);
+
+            for(int i = 1;; i++)
+            {
+                string fontName = $"F{i}";
+                var fontRef = fontResObj.GetAttributeValue<IList<object>>(fontName);
+
+                if(fontRef == null) { break; }
+
+                var fontObj = ObjectRoot.GetObjectByRef(fontRef);
+
+                var toUnicodeObj = fontObj.GetAttributeValue("ToUnicode");
+                if(toUnicodeObj == null)
+                {
+                    throw new NotImplementedException("Only Unicode is supported!");
+                }
+
+                Fonts.Add(fontName, new PdfUnicodeFont(this, fontObj));
+            }
+        }
+
+        public PdfDocument(PdfObjectRoot pdfRoot)
         {
-            Objects = objects.OrderBy(o => o.Id).ToList();
-            Catalog = GetObjectsByType("Catalog").FirstOrDefault();
+            ObjectRoot = pdfRoot;
+            Pages = new List<PdfPage>();
+            Fonts = new Dictionary<string, PdfFont>();
+
+            PopulateContents();
         }
     }
 }

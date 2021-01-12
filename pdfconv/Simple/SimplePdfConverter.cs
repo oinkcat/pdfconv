@@ -24,34 +24,18 @@ namespace PdfConverter.Simple
 
             // Do conversion itself
             using var pdfStream = File.OpenRead(path);
-            var pdfFile = await new PdfLoader(pdfStream).Load();
+            var pdfObjectRoot = await new PdfLoader(pdfStream).Load();
 
-            var textContents = ConvertToText(pdfFile);
+            var textContents = ConvertToText(pdfObjectRoot);
             await SaveConvertedResult(textContents);
             
             return await Task.FromResult(true);
         }
 
-        private IList<string> ConvertToText(PdfObjectRoot pdf)
+        private IList<string> ConvertToText(PdfObjectRoot pdfRoot)
         {
-            var lines = new List<string>();
-
-            foreach(var obj in pdf.Objects)
-            {
-                lines.Add($"Object ID: {obj.Id}, type: {obj.Type}");
-                
-                if(obj.HasStream)
-                {
-                    lines.Add("<< Binary Content >>");
-                    lines.Add(String.Empty);
-                }
-                else
-                {
-                    lines.AddRange(obj.TextContent);
-                }
-            }
-
-            return lines;
+            var parsedDocument = new PdfDocument(pdfRoot);
+            return parsedDocument.ExtractTextContent();
         }
 
         private async Task SaveConvertedResult(IList<string> lines)
