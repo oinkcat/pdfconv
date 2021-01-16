@@ -25,7 +25,15 @@ namespace PdfConverter.Simple.Structure
             for(int i = 0; i < input.Length; i += 2)
             {
                 string hexChar = input.Substring(i, 2);
-                buffer.Append(conversionTable[hexChar]);
+
+                if(conversionTable.TryGetValue(hexChar, out char decodedChar))
+                {
+                    buffer.Append(decodedChar);
+                }
+                else
+                {
+                    buffer.Append('?');
+                }
             }
 
             return buffer.ToString();
@@ -41,6 +49,7 @@ namespace PdfConverter.Simple.Structure
             ParseConversionTables(toUnicodeObj.TextContent);
         }
 
+        // TODO: Parse beginbfrange - endbfrange
         private void ParseConversionTables(IList<string> objContents)
         {
             var tokenizer = new ContentTokenizer();

@@ -15,6 +15,10 @@ namespace PdfConverter.Tests
                                                   "<13>14<14>10<15>2<1617>17<18191A>-1" +
                                                   "<1B>]TJ";
 
+        private const string MultilineStringContentLine = "0 0 Td /F1 2 Tf<11121314\n" +
+                                                          "15161718\n" +
+                                                          "191A1B>Tj";
+
         /// <summary>
         /// Test parsing simple content line
         /// </summary>
@@ -39,6 +43,23 @@ namespace PdfConverter.Tests
             var allHexStrings = contentTokens.Where(t => t.Type == TokenType.HexString);
 
             Assert.Equal(8, allHexStrings.Count());
+        }
+
+        /// <summary>
+        /// Test paring conent line with multi-line string literal
+        /// </summary>
+        [Fact]
+        public void TestParsingMultilineStringContent()
+        {
+            string[] multilineContent = MultilineStringContentLine.Split('\n');
+            var tokenizer = new ContentTokenizer();
+
+            foreach(string contentLine in multilineContent)
+            {
+                var contentTokens = tokenizer.Tokenize(contentLine);
+                bool hasHexString = contentTokens.Any(t => t.Type == TokenType.HexString);
+                Assert.True(hasHexString);
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace PdfConverter.Simple.Parsing
 {
@@ -8,6 +9,11 @@ namespace PdfConverter.Simple.Parsing
     /// </summary>
     public class Token
     {
+        // Simple token types
+        private static ISet<TokenType> atomicTokenTypes = new HashSet<TokenType> {
+            TokenType.Id, TokenType.Number, TokenType.String, TokenType.HexString
+        };
+
         /// <summary>
         /// Token type
         /// </summary>
@@ -17,6 +23,11 @@ namespace PdfConverter.Simple.Parsing
         /// Token value
         /// </summary>
         public object Value { get; private set; }
+
+        /// <summary>
+        /// Token has a simple type
+        /// </summary>
+        public bool IsAtomic => atomicTokenTypes.Contains(Type);
 
         /// <summary>
         /// Get end-of-line token

@@ -16,6 +16,13 @@ namespace PdfConverter.Simple.Parsing
     		"[", "]",
     		" ", "/"
         };
+
+		private string unClosedStringTokenValue;
+
+		/// <summary>
+		/// All tokens has been fully determined in input string
+		/// </summary>
+		public bool IsFullyTokenized => unClosedStringTokenValue == null;
     	
         /// <summary>
         /// Tokenize object content string
@@ -24,6 +31,12 @@ namespace PdfConverter.Simple.Parsing
         /// <returns>Token sequence</returns>
     	public IEnumerable<Token> Tokenize(string inString)
     	{
+			if(unClosedStringTokenValue != null)
+			{
+				inString = String.Concat(unClosedStringTokenValue, inString);
+				unClosedStringTokenValue = null;
+			}
+
     		int nextPos = 0;
     		
     		while(nextPos < inString.Length)
@@ -85,18 +98,34 @@ namespace PdfConverter.Simple.Parsing
 		) {				
 			var delimiterTokenType = (TokenType)tokenType;
 
-			if(delimiterTokenType == TokenType.HexStringStart)
+			if((delimiterTokenType == TokenType.StringStart) ||
+			   (delimiterTokenType == TokenType.HexStringStart))
 			{
-				// Next token is a hexadecimal string literal
-				int endTokenTypeIdx = (int)TokenType.HexStringEnd;
+				// Next token is a (hex)string literal
+				bool isAsciiString = delimiterTokenType == TokenType.StringStart;
+				int endTokenTypeIdx = isAsciiString
+					? (int)TokenType.StringEnd
+					: (int)TokenType.HexStringEnd;
+
 				int strEndPos = inString.IndexOf(delimiters[endTokenTypeIdx], tokenPos);
-				if(strEndPos < 0)
-					throw new Exception("No HEX string ending token!");
+				bool isMultilineString = strEndPos < 0;
+
+				if(isMultilineString)
+				{
+					// String s multi-line
+					strEndPos = inString.Length - 1;
+					unClosedStringTokenValue = delimiters[tokenType];
+				}
 
 				int tokenLength = strEndPos - tokenPos + 1;
 				tokenValue = inString.Substring(tokenPos, tokenLength);
-				string hexString = tokenValue.Substring(1, tokenValue.Length - 2);
-				return new Token(TokenType.HexString, hexString);
+				int offset = isMultilineString ? 1 : 2;
+				string stringText = tokenValue.Substring(1, tokenValue.Length - offset);
+
+				var stringTokenType = isAsciiString 
+					? TokenType.String 
+					: TokenType.HexString;
+				return new Token(stringTokenType, stringText);
 			}
 			else if(delimiterTokenType == TokenType.Slash)
 			{

@@ -13,6 +13,8 @@ namespace PdfConverter.Simple.Structure
     {
         private PdfDocument document;
 
+        private PdfFont currentFont;
+
         /// <summary>
         /// Convert page content instuction stream to text
         /// </summary>
@@ -30,33 +32,43 @@ namespace PdfConverter.Simple.Structure
             var tokenizer = new ContentTokenizer();
             bool textOutputStarted = false;
 
+            var tokensBuffer = new List<Token>();
+            var lineBuffer = new StringBuilder();
+
             foreach(string contentLine in page.RawContent)
             {
                 var lineTokens = tokenizer.Tokenize(contentLine);
+                tokensBuffer.AddRange(lineTokens);
+
+                if(!tokenizer.IsFullyTokenized) { continue; }
 
                 if(textOutputStarted)
                 {
-                    if(lineTokens.First().Value as string == "ET")
+                    if(tokensBuffer[0].Value as string == "ET")
                     {
+                        outLines.Add(lineBuffer.ToString());
+                        lineBuffer.Clear();
+
                         textOutputStarted = false;
                     }
                     else
                     {
-                        string lineText = GetTextFromOutputInstructions(lineTokens);
-                        outLines.Add(lineText);
+                        string chunkText = GetTextFromOutputInstructions(tokensBuffer);
+                        lineBuffer.Append(chunkText);
                     }
                 }
-                else if(lineTokens.First().Value as string == "BT")
+                else if(tokensBuffer[0].Value as string == "BT")
                 {
                     textOutputStarted = true;
                 }
+
+                tokensBuffer.Clear();
             }
         }
 
         private string GetTextFromOutputInstructions(IEnumerable<Token> lineTokens)
         {
             var paramTokens = new List<Token>();
-            PdfFont currentFont = null;
 
             foreach(var token in lineTokens)
             {
@@ -89,11 +101,13 @@ namespace PdfConverter.Simple.Structure
         {
             var textBuffer = new StringBuilder();
 
-            foreach(var token in tokens.Where(t => t.Type == TokenType.HexString))
-            {
-                string decodedText = font.DecodeString(token.Value as string);
-                textBuffer.Append(decodedText);
-            }
+            var tokenValues = tokens
+                .Where(t => t.Type == TokenType.HexString)
+                .Select(t => t.Value);
+
+            string hexString = String.Join(String.Empty, tokenValues);
+            string decodedText = font.DecodeString(hexString);
+            textBuffer.Append(decodedText);
 
             return textBuffer.ToString();
         }

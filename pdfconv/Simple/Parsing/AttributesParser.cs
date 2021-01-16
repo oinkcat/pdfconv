@@ -20,6 +20,8 @@ namespace PdfConverter.Simple.Parsing
 
         private int nestedDictLevel;
 
+        private List<object> currentArray;
+
         /// <summary>
         /// Get parse results
         /// </summary>
@@ -47,7 +49,7 @@ namespace PdfConverter.Simple.Parsing
             var token = GetNextToken();
 
             // Very basic parsing
-            while(token.Type != TokenType.DictEnd && token.Type != TokenType.EndOfLine)
+            while(token.Type != TokenType.EndOfLine)
             {
                 if(token.Type == TokenType.Name)
                 {
@@ -60,26 +62,37 @@ namespace PdfConverter.Simple.Parsing
                         {
                             nestedDictLevel++;
                         }
+                        else if(valueOrNameToken.Type == TokenType.ArrayStart)
+                        {
+                            currentArray = new List<object>();
+                        }
 
                         PushBackToken(valueOrNameToken);
                         var inlineAttributeValues = ReadInlineAttributeValues();
-                        parsedAttributes.Add(attribName, inlineAttributeValues);
+                        SaveAttribute(attribName, inlineAttributeValues);
                     }
                     else
                     {
-                        parsedAttributes.Add(attribName, valueOrNameToken.Value);
+                        SaveAttribute(attribName, valueOrNameToken.Value);
                     }
+                }
+                else if(token.IsAtomic && currentArray != null)
+                {
+                    currentArray.Add(token.Value);
+                }
+                else if(token.Type == TokenType.ArrayEnd)
+                {
+                    currentArray = null;
+                }
+                else if(token.Type == TokenType.DictEnd)
+                {
+                    nestedDictLevel--;
                 }
 
                 token = GetNextToken();
             }
-
-            if(token.Type == TokenType.DictEnd)
-            {
-                nestedDictLevel--;
-            }
-
-            parsingCompleted = token.Type == TokenType.DictEnd && nestedDictLevel < 0;
+                
+            parsingCompleted = nestedDictLevel < 0;
 
             return !parsingCompleted;
         }
@@ -118,10 +131,13 @@ namespace PdfConverter.Simple.Parsing
         private object ReadInlineAttributeValues()
         {
             Token nextToken = null;
-            var inlineAttributes = new List<object>();
+            var inlineAttributes = (currentArray != null) 
+                ? currentArray
+                : new List<object>();
 
             var terminalTokens = new HashSet<TokenType>(new TokenType[] {
-                TokenType.Name, TokenType.EndOfLine, TokenType.DictEnd
+                TokenType.Name, TokenType.EndOfLine, 
+                TokenType.ArrayEnd, TokenType.DictEnd
             });
 
             do
@@ -130,6 +146,7 @@ namespace PdfConverter.Simple.Parsing
                 object attribValue = nextToken switch {
                     { Type: TokenType.Number } => (double)nextToken.Value,
                     { Type: TokenType.Id } => (string)nextToken.Value,
+                    { Type: TokenType.String } => (string)nextToken.Value,
                     _ => null
                 };
                 
@@ -148,6 +165,14 @@ namespace PdfConverter.Simple.Parsing
         }
 
         private void PushBackToken(Token token) => pushedBackToken = token;
+
+        private void SaveAttribute(string name, object value)
+        {
+            string nameWithLevel = (nestedDictLevel > 0)
+                ? $"{name}_{nestedDictLevel}"
+                : name;
+            parsedAttributes.Add(nameWithLevel, value);
+        }
 
         /// <summary>
         /// Reset parser state
