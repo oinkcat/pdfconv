@@ -11,8 +11,41 @@ namespace PdfConverter.Simple
     /// <summary>
     public class SimplePdfConverter : BasePdfConverter
     {
+        private const int MaxSupportedDocMajorVersion = 1;
+        private const int MaxSupportedDocMinorVersion = 4;
+
         private string directoryPath;
         private string baseName;
+
+        /// <summary>
+        /// Verify that specified file can be converted
+        /// </summary>
+        /// <param name="path">PDF file path to convert</param>
+        /// <returns>Whether can convert or not</returns>
+        protected override async Task<bool> CheckCanConvert(string path)
+        {
+            try
+            {
+                using var reader = File.OpenText(path);
+                string signature = await reader.ReadLineAsync();
+                string[] signarureParts = signature.Split('-');
+
+                if(signarureParts[0] == "%PDF")
+                {
+                    var docVersion = Version.Parse(signarureParts[1]);
+                    return (docVersion.Major <= MaxSupportedDocMajorVersion) &&
+                           (docVersion.Minor <= MaxSupportedDocMinorVersion);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Perform PDF-to-text conversion

@@ -29,29 +29,9 @@ namespace PdfConverter
         /// <summary>
         protected abstract Task<bool> ConvertFileCore(string path);
 
-        // Verify that file can be converted
-        private async Task<bool> CheckCanConvert(string path)
-        {
-            const int NumBytesToTest = 4;
-
-            try
-            {
-                using var fs = new FileStream(path, FileMode.Open);
-                var buffer = new byte[NumBytesToTest];
-
-                var pdfHeader = new char[] { '%', 'P', 'D', 'F' };
-
-                return await fs.ReadAsync(buffer, 0, NumBytesToTest) switch
-                {
-                    NumBytesToTest => buffer.Select(b => (char)b)
-                                            .SequenceEqual(pdfHeader),
-                    _ => false
-                };
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        /// <summary>
+        /// Verify that file can be converted
+        /// </summary>
+        protected abstract Task<bool> CheckCanConvert(string path);
     }
 }
