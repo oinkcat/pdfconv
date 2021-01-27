@@ -19,19 +19,23 @@ namespace PdfConverter.Tests
         [Fact]
         public void TestContinuousParsing()
         {
+            const int NumTokensInTestString = 35;
+
             using var contentReader = CreateStringReader(ObjectContent);
-            var contentSource = new TextReaderTokenSource(contentReader);
-            var streamer = new NewTokenStreamer(contentSource);
+            var streamer = NewTokenStreamer.CreateFromReader(contentReader);
 
             Token currentToken;
+            int numTokensRead = 0;
 
             do
             {
                 currentToken = streamer.GetNextToken();
+                numTokensRead++;
             }
             while(currentToken.Type != TokenType.End);
 
             Assert.True(streamer.AtEndOfStream);
+            Assert.Equal(NumTokensInTestString, numTokensRead - 1);
         }
 
         // Create text lines reader for string

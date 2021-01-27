@@ -11,7 +11,8 @@ namespace PdfConverter.Simple.Parsing
     {
         // Simple token types
         private static ISet<TokenType> atomicTokenTypes = new HashSet<TokenType> {
-            TokenType.Id, TokenType.Number, TokenType.String, TokenType.HexString
+            TokenType.Id, TokenType.Name, TokenType.Number, 
+            TokenType.String, TokenType.HexString
         };
 
         /// <summary>

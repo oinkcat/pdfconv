@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 
 namespace PdfConverter.Simple.Parsing
@@ -86,6 +87,16 @@ namespace PdfConverter.Simple.Parsing
             }
 
             return lineRead;
+        }
+
+        public static NewTokenStreamer CreateFromReader(TextReader reader)
+        {
+            return new NewTokenStreamer(new TextReaderTokenSource(reader));
+        }
+
+        public static NewTokenStreamer CreateFromList(IList<string> stringList)
+        {
+            return new NewTokenStreamer(new StringListTokenSource(stringList));
         }
 
         public NewTokenStreamer(ITokenStreamSource lineSource)

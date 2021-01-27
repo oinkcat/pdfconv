@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Xunit;
 using PdfConverter.Simple.Parsing;
 
@@ -11,6 +12,15 @@ namespace PdfConverter.Tests
         private const string ObjectContent = "1 0 obj" +
                                              "<</Length 804/Filter/FlateDecode>>" +
                                              "stream";
+
+        private const string ComplexObjectContent = @"
+            [
+                <</Length 1000/Filter/FlateDecode>>
+                10
+                (test)
+                <</TestArray [0 1 2]/TestDict<</K/V>>>>
+            ]
+        ";
 
         /// <summary>
         /// Test parsing multipart object contents
@@ -43,6 +53,50 @@ namespace PdfConverter.Tests
             var streamStartToken = streamer.GetNextToken();
             
             Assert.Equal("stream", streamStartToken.Value as string);
+        }
+
+        /// <summary>
+        /// Test parsing full object's content terms
+        /// </summary>
+        [Fact]
+        public void TestAllTermsParsing()
+        {
+            var sourceList = new List<string> { ObjectContent };
+            var streamer = NewTokenStreamer.CreateFromList(sourceList);
+            var parser = new ObjectParser(streamer);
+
+            var allTerms = new List<IPdfTerm>();
+            IPdfTerm parsedTerm;
+
+            do
+            {
+                parsedTerm = parser.ReadSingleObject();
+                if(parsedTerm != null)
+                {
+                    allTerms.Add(parsedTerm);
+                }
+            }
+            while(parsedTerm != null);
+
+            Assert.Null(parsedTerm);
+            Assert.Equal(5, allTerms.Count);
+        }
+
+        /// <summary>
+        /// Test parsing object content terms
+        /// </summary>
+        [Fact]
+        public void TestObjectTermsParsing()
+        {
+            var sourceList = new List<string>(ComplexObjectContent.Split("\r\n"));
+            var streamer = NewTokenStreamer.CreateFromList(sourceList);
+            var parser = new ObjectParser(streamer);
+
+            IPdfTerm term = parser.ReadSingleObject();
+            Assert.IsType<PdfArray>(term);
+
+            var firstArrayElement = (term as PdfArray)[0];
+            Assert.IsType<PdfDictionary>(firstArrayElement);
         }
     }
 }
