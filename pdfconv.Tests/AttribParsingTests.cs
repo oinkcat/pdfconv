@@ -18,7 +18,7 @@ namespace PdfConverter.Tests
             <</Type/Font/Subtype/TrueType/BaseFont/BAAAAA+LiberationSerif-Bold
             /FirstChar 0
             /LastChar 11
-            /Widths[777 666 443 389 333 250 722 500 443 556 833 556 ]
+            /Widths [777 666 443 389 333 250 722 500 443 556 833 556 ]
             /FontDescriptor 13 0 R
             /ToUnicode 14 0 R
             >>";

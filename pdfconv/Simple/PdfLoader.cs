@@ -37,11 +37,19 @@ namespace PdfConverter.Simple
                 while(!reader.EndOfStream)
                 {
                     string line = (await reader.ReadLineAsync()).Trim();
-                    if(line.EndsWith(ObjStart))
+                    // Skip comments
+                    if(line.Length == 0 || line.StartsWith("%")) { continue; }
+
+                    var streamer = new TokenStreamer(line);
+
+                    int objId = ReadObjectId(streamer);
+                    if(objId > 0)
                     {
-                        int objId = int.Parse(line.Split()[0]);
-                        var pdfObj = await LoadObject(objId, reader);
-                        objects.Add(objId, pdfObj);
+                        var pdfObj = await LoadObject(objId, streamer, reader);
+                        if(!objects.ContainsKey(objId))
+                        {
+                            objects.Add(objId, pdfObj);
+                        }
                     }
                 }
 
@@ -50,6 +58,39 @@ namespace PdfConverter.Simple
             }
 
             return new PdfObjectRoot(objects.Values);
+        }
+
+        private int ReadObjectId(TokenStreamer streamer)
+        {
+            var numberParts = new List<double>();
+            bool idParsed = false;
+
+            while(!idParsed)
+            {
+                var currentToken = streamer.GetNextToken();
+
+                if(currentToken.Type == TokenType.Number)
+                {
+                    numberParts.Add((double)currentToken.Value);
+                }
+                else if(currentToken.Type == TokenType.Id)
+                {
+                    if((currentToken.Value as string).Equals("obj"))
+                    {
+                        idParsed = true;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+
+            return (int)numberParts[0];
         }
 
         private async Task LoadReferencedObjects()
@@ -65,22 +106,42 @@ namespace PdfConverter.Simple
             }
         }
 
-        private async Task<PdfObject> LoadObject(int id, MyReader reader)
-        {
-            var attribParser = new AttributesParser();
+        private async Task<PdfObject> LoadObject (
+            int id, 
+            TokenStreamer streamer, 
+            MyReader reader
+        ) {
+            var attribParser = new AttributesParser(streamer);
 
             // Read object attribute group
-            string attribLine = await reader.ReadLineAsync();
+            string startLine = null;
+            Token nextToken;
 
-            if(attribLine.StartsWith(AttribGroupStart))
+            do
+            {
+                if(streamer.AtEndOfLine)
+                {
+                    startLine = await reader.ReadLineAsync();
+                    streamer.SetSourceLine(startLine);
+                }
+                nextToken = streamer.GetNextToken();
+            }
+            while(nextToken.Type == TokenType.EndOfLine);
+
+            streamer.PushBackToken(nextToken);
+
+            if(nextToken.Type == TokenType.DictStart)
             {
                 bool needMoreInput = false;
                 do
                 {
-                    needMoreInput = attribParser.FeedNextChunk(attribLine);
-                    if(!needMoreInput) { break; }
+                    if(streamer.AtEndOfLine)
+                    {
+                        streamer.SetSourceLine(await reader.ReadLineAsync());
+                    }
 
-                    attribLine = await reader.ReadLineAsync();
+                    needMoreInput = attribParser.FeedNextChunk(null);
+                    if(!needMoreInput) { break; }
                 }
                 while(needMoreInput);
             }
@@ -90,8 +151,18 @@ namespace PdfConverter.Simple
             // Read object body
             if(newObject.GetAttributeValue("Filter")?.Equals("FlateDecode") ?? false)
             {
-                string streamToken = await reader.ReadLineAsync();
-                if(streamToken != StreamStart) { throw new InvalidDataException(); }
+                var streamToken = streamer.GetNextToken();
+
+                if(streamer.AtEndOfLine)
+                {
+                    streamer.SetSourceLine(await reader.ReadLineAsync());
+                    streamToken = streamer.GetNextToken();
+                }
+
+                if(!(streamToken.Value as string).Equals(StreamStart))
+                {
+                    throw new InvalidDataException();
+                }
                 
                 var lengthAttribVal = newObject.GetAttributeValue("Length");
 
@@ -100,6 +171,13 @@ namespace PdfConverter.Simple
                     // Object body should be loaded later
                     int referencedId = (int)(double)lengthRefParams[0];
                     references.Add(id, (referencedId, reader.BaseStream.Position));
+
+                    // Skip object's content
+                    string bodyLine = startLine;
+                    while(bodyLine != ObjEnd)
+                    {
+                        bodyLine = await reader.ReadLineAsync();
+                    }
                 }
                 else
                 {
@@ -109,10 +187,10 @@ namespace PdfConverter.Simple
                     newObject.BinaryContent = content;
                 }
             }
-            else if(!attribLine.EndsWith(AttribGroupEnd))
+            else
             {
                 // Load body from string data
-                for(string line = attribLine; 
+                for(string line = startLine;
                     line != ObjEnd; 
                     line = await reader.ReadLineAsync())
                 {

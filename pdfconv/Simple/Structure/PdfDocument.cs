@@ -48,13 +48,22 @@ namespace PdfConverter.Simple.Structure
         // Fill pages information
         private void PopulatePages(PdfObject pagesObj)
         {
-            int pagesCount = (int)pagesObj.GetAttributeValue<double>("Count");
             var pageRefs = pagesObj.GetAttributeValue<IList<object>>("Kids");
-
-            for(int i = 0; i < pagesCount; i++)
+            int kidsCount = pageRefs.Count / 3;
+            
+            for(int i = 0; i < kidsCount; i++)
             {
-                var singlePageObj = ObjectRoot.GetObjectByRef(pageRefs, i);
-                Pages.Add(new PdfPage(this, singlePageObj));
+                var kidPageObj = ObjectRoot.GetObjectByRef(pageRefs, i);
+
+                if(kidPageObj.Type == "Page")
+                {
+                    Pages.Add(new PdfPage(this, kidPageObj));
+                }
+                else if(kidPageObj.Type == "Pages")
+                {
+                    // Nested pages (?)
+                    PopulatePages(kidPageObj);
+                }
             }
         }
 

@@ -12,15 +12,11 @@ namespace PdfConverter.Simple.Parsing
 
         private bool parsingCompleted;
 
-        private IEnumerator<Token> tokenSource;
-
-        private Token pushedBackToken;
-
-        private string currentChunk;
-
         private int nestedDictLevel;
 
         private List<object> currentArray;
+
+        private TokenStreamer streamer;
 
         /// <summary>
         /// Get parse results
@@ -44,18 +40,22 @@ namespace PdfConverter.Simple.Parsing
 
             if(parsingCompleted) { return false; }
 
-            currentChunk = inString;
+            if(inString != null)
+            {
+                streamer.SetSourceLine(inString);
+            }
 
-            var token = GetNextToken();
+            var token = streamer.GetNextToken();
+            bool chunkParsed = false;
 
             // Very basic parsing
-            while(token.Type != TokenType.EndOfLine)
+            while(!chunkParsed)
             {
                 if(token.Type == TokenType.Name)
                 {
                     string attribName = token.Value as string;
 
-                    var valueOrNameToken = GetNextToken();
+                    var valueOrNameToken = streamer.GetNextToken();
                     if(valueOrNameToken.Type != TokenType.Name)
                     {
                         if(valueOrNameToken.Type == TokenType.DictStart)
@@ -67,7 +67,7 @@ namespace PdfConverter.Simple.Parsing
                             currentArray = new List<object>();
                         }
 
-                        PushBackToken(valueOrNameToken);
+                        streamer.PushBackToken(valueOrNameToken);
                         var inlineAttributeValues = ReadInlineAttributeValues();
                         SaveAttribute(attribName, inlineAttributeValues);
                     }
@@ -78,54 +78,39 @@ namespace PdfConverter.Simple.Parsing
                 }
                 else if(token.IsAtomic && currentArray != null)
                 {
+                    // HACK: Flattening all nested structures
                     currentArray.Add(token.Value);
                 }
                 else if(token.Type == TokenType.ArrayEnd)
                 {
                     currentArray = null;
                 }
+                else if(token.Type == TokenType.DictStart)
+                {
+                    nestedDictLevel++;
+                }
                 else if(token.Type == TokenType.DictEnd)
                 {
                     nestedDictLevel--;
                 }
+                else if(token.Type == TokenType.EndOfLine)
+                {
+                    chunkParsed = true;
+                }
 
-                token = GetNextToken();
+                if(nestedDictLevel <= 0)
+                {
+                    parsingCompleted = true;
+                    chunkParsed = true;
+                }
+
+                if(!chunkParsed)
+                {
+                    token = streamer.GetNextToken();
+                }
             }
-                
-            parsingCompleted = nestedDictLevel < 0;
 
             return !parsingCompleted;
-        }
-
-        // Get next token in stream
-        private Token GetNextToken()
-        {
-            if(pushedBackToken != null)
-            {
-                var tokenToRetry = pushedBackToken;
-                pushedBackToken = null;
-                return tokenToRetry;
-            }
-
-            if(tokenSource == null)
-            {
-                tokenSource = new ContentTokenizer()
-                    .Tokenize(currentChunk)
-                    .GetEnumerator();
-            }
-
-            // Yield next token
-            if(tokenSource.MoveNext())
-            {
-                return tokenSource.Current;
-            }
-            else
-            {
-                tokenSource.Dispose();
-                tokenSource = null;
-
-                return Token.EOL;
-            }
         }
 
         private object ReadInlineAttributeValues()
@@ -142,7 +127,7 @@ namespace PdfConverter.Simple.Parsing
 
             do
             {
-                nextToken = GetNextToken();
+                nextToken = streamer.GetNextToken();
                 object attribValue = nextToken switch {
                     { Type: TokenType.Number } => (double)nextToken.Value,
                     { Type: TokenType.Id } => (string)nextToken.Value,
@@ -157,18 +142,16 @@ namespace PdfConverter.Simple.Parsing
             }
             while(!terminalTokens.Contains(nextToken.Type));
 
-            PushBackToken(nextToken);
+            streamer.PushBackToken(nextToken);
 
             return (inlineAttributes.Count > 1)
                 ? inlineAttributes
                 : inlineAttributes.FirstOrDefault();
         }
 
-        private void PushBackToken(Token token) => pushedBackToken = token;
-
         private void SaveAttribute(string name, object value)
         {
-            string nameWithLevel = (nestedDictLevel > 0)
+            string nameWithLevel = (nestedDictLevel > 1)
                 ? $"{name}_{nestedDictLevel}"
                 : name;
             parsedAttributes.Add(nameWithLevel, value);
@@ -181,14 +164,19 @@ namespace PdfConverter.Simple.Parsing
         {
             parsedAttributes.Clear();
             parsingCompleted = false;
-            currentChunk = null;
-            pushedBackToken = null;
             nestedDictLevel = 0;
         }
 
         public AttributesParser()
         {
             parsedAttributes = new Dictionary<string, object>();
+            streamer = new TokenStreamer();
+        }
+
+        public AttributesParser(TokenStreamer streamer)
+        {
+            parsedAttributes = new Dictionary<string, object>();
+            this.streamer = streamer;
         }
     }
 }

@@ -14,7 +14,8 @@ namespace PdfConverter.Simple.Parsing
             "<", ">",
     		"(", ")",
     		"[", "]",
-    		" ", "/"
+    		" ", "%",
+			"/"
         };
 
 		private string unClosedStringTokenValue;
@@ -134,6 +135,12 @@ namespace PdfConverter.Simple.Parsing
 				tokenValue = inString.Substring(tokenPos, nameEndPos - tokenPos);
 				return new Token(TokenType.Name, tokenValue.Substring(1));
 			}
+			else if(delimiterTokenType == TokenType.Comment)
+			{
+				// Token is comment - skip
+				tokenValue = inString.Substring(tokenPos);
+				return null;
+			}
 			else if(delimiterTokenType != TokenType.Space)
 			{
 				// Next token is delimiter except of space
@@ -142,7 +149,7 @@ namespace PdfConverter.Simple.Parsing
 			}
 			else
 			{
-				// Token is whitespace
+				// Token is whitespace - skip
 				tokenValue = delimiters[(int)TokenType.Space];
 				return null;
 			}

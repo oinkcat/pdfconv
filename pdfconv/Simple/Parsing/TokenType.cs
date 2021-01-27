@@ -16,12 +16,14 @@ namespace PdfConverter.Simple.Parsing
         ArrayStart,
         ArrayEnd,
         Space,
+        Comment,
         Slash,
         Number,
         Id,
         Name,
         String,
         HexString,
-        EndOfLine
+        EndOfLine,
+        End
     }
 }
