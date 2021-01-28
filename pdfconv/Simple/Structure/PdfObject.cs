@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Collections.Generic;
+using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Simple.Structure
 {
@@ -10,7 +11,12 @@ namespace PdfConverter.Simple.Structure
     public class PdfObject
     {
         // Object's attributes
-        private Dictionary<string, object> attributes;
+        private PdfDictionary Attributes
+        {
+            get => (Content is PdfDictionary dict)
+                        ? dict
+                        : new PdfDictionary();
+        }
 
         /// <summary>
         /// Object identifier
@@ -18,13 +24,18 @@ namespace PdfConverter.Simple.Structure
         public int Id { get; }
 
         /// <summary>
-        /// Object's binary content
+        /// Content term
         /// </summary>
-        /// <value></value>
+        /// <value>Atom or container</value>
+        public IPdfTerm Content { get; }
+
+        /// <summary>
+        /// Object's stream binary content
+        /// </summary>
         public byte[] BinaryContent { get; set; }
 
         /// <summary>
-        /// Object's text content
+        /// Object's stream text content
         /// </summary>
         public List<string> TextContent { get; }
 
@@ -36,23 +47,23 @@ namespace PdfConverter.Simple.Structure
         /// <summary>
         /// Object type
         /// </summary>
-        public string Type => GetAttributeValue("Type") as string;
+        public string Type => GetAttributeValue<PdfAtom>("Type")?.AsString();
 
         /// <summary>
         /// Check if object contains specified attribute
         /// </summary>
         /// <param name="name">Attribute name to check</param>
         /// <returns>Whether or not object has attribute</returns>
-        public bool HasAttribute(string name) => attributes.ContainsKey(name);
+        public bool HasAttribute(string name) => Attributes.ContainsKey(name);
 
         /// <summary>
         /// Get value of attribute with specified name
         /// </summary>
         /// <param name="name">Attribute name</param>
         /// <returns>Attribute value or null if attribute not exists</returns>
-        public object GetAttributeValue(string name)
+        public IPdfTerm GetAttributeValue(string name)
         {
-            return attributes.TryGetValue(name, out object value) ? value : null;
+            return Attributes.TryGetValue(name, out var value) ? value : null;
         }
 
         /// <summary>
@@ -61,25 +72,35 @@ namespace PdfConverter.Simple.Structure
         /// <param name="name">Attribute name</param>
         /// <typeparam name="T">Attribute type</typeparam>
         /// <returns>Attribute value of desired type</returns>
-        public T GetAttributeValue<T>(string name)
+        public T GetAttributeValue<T>(string name) where T : IPdfTerm
         {
             return (T)GetAttributeValue(name);
         }
+
+        /// <summary>
+        /// Return object content as term of specified type
+        /// </summary>
+        /// <typeparam name="T">Required term type</typeparam>
+        /// <returns>Term of specified type</returns>
+        public T ContentAs<T>() where T : IPdfTerm => (T)Content;
 
         /// <summary>
         /// Convert binary content to text lines
         /// </summary>
         public void ConvertContentToText()
         {
-            var textLines = Encoding.ASCII.GetString(BinaryContent).Split('\n');
-            TextContent.AddRange(textLines);
+            if(TextContent.Count == 0)
+            {
+                var textLines = Encoding.ASCII.GetString(BinaryContent).Split('\n');
+                TextContent.AddRange(textLines);
+            }
         }
 
-        public PdfObject(int id, Dictionary<string, object> attrs)
+        public PdfObject(int id, IPdfTerm content = null)
         {
             Id = id;
+            Content = content;
             TextContent = new List<string>();
-            attributes = attrs ?? new Dictionary<string, object>();
         }
     }
 }

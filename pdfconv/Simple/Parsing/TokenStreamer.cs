@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Simple.Parsing
 {

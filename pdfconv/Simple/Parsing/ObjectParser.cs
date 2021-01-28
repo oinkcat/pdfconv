@@ -1,4 +1,5 @@
 using System;
+using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Simple.Parsing
 {
@@ -60,12 +61,42 @@ namespace PdfConverter.Simple.Parsing
                 }
 
                 string elementKey = token.Value as string;
-                dict.Add(elementKey, ParseTerm());
+                var element = ParseTermOrSequence();
+                dict.Add(elementKey, element);
 
                 token = tokener.GetNextToken();
             }
 
             return dict;
+        }
+
+        // Parse one or more sequential terms
+        private IPdfTerm ParseTermOrSequence()
+        {
+            var firstElement = ParseTerm();
+            
+            var nextToken = tokener.GetNextToken();
+
+            if((nextToken.Type == TokenType.Number) ||
+               (nextToken.Type == TokenType.Id))
+            {
+                var sequence = new PdfSequence { firstElement };
+                
+                while((nextToken.Type == TokenType.Number) ||
+                      (nextToken.Type == TokenType.Id))
+                {
+                    sequence.Add(new PdfAtom(nextToken));
+                    nextToken = tokener.GetNextToken();
+                }
+
+                tokener.PushBackToken(nextToken);
+                return sequence;
+            }
+            else
+            {
+                tokener.PushBackToken(nextToken);
+                return firstElement;
+            }
         }
 
         public ObjectParser(NewTokenStreamer tokenStreamer)

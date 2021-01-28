@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Collections.Generic;
+using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Simple.Parsing
 {

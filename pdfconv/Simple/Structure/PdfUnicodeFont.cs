@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Globalization;
 using PdfConverter.Simple.Parsing;
+using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Simple.Structure
 {
@@ -41,7 +42,7 @@ namespace PdfConverter.Simple.Structure
 
         private void PopulateConversionTable()
         {
-            var toUnicodeRef = RawObject.GetAttributeValue<IList<object>>("ToUnicode");
+            var toUnicodeRef = RawObject.GetAttributeValue<PdfArray>("ToUnicode");
             var toUnicodeObj = document.ObjectRoot.GetObjectByRef(toUnicodeRef);
 
             toUnicodeObj.ConvertContentToText();

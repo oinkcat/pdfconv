@@ -1,4 +1,5 @@
 using System;
+using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Simple.Structure
 {
@@ -31,7 +32,7 @@ namespace PdfConverter.Simple.Structure
         /// </summary>
         protected void PopulateBasicInfo()
         {
-            Name = RawObject.GetAttributeValue<string>("BaseFont");
+            Name = RawObject.GetAttributeValue<PdfAtom>("BaseFont").AsString();
         }
     }
 }

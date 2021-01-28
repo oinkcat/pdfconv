@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Simple.Structure
 {
@@ -25,7 +26,7 @@ namespace PdfConverter.Simple.Structure
         {
             var pdfObjRoot = document.ObjectRoot;
 
-            var pageContentRef = pageObj.GetAttributeValue<IList<object>>("Contents");
+            var pageContentRef = pageObj.GetAttributeValue<PdfArray>("Contents");
             RawObject = pdfObjRoot.GetObjectByRef(pageContentRef);
 
             if(!RawObject.HasStream)

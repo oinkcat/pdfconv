@@ -63,7 +63,7 @@ namespace PdfConverter.Simple
 
         public override int Peek()
         {
-            throw new NotImplementedException();
+            return EndOfStream ? -1 : 0;
         }
 
         public override int Read(Span<char> buffer)

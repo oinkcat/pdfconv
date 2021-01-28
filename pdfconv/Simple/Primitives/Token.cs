@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace PdfConverter.Simple.Parsing
+namespace PdfConverter.Simple.Primitives
 {
     /// <summary>
     /// PDF token

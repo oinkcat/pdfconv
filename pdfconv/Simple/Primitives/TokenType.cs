@@ -1,6 +1,6 @@
 using System;
 
-namespace PdfConverter.Simple.Parsing
+namespace PdfConverter.Simple.Primitives
 {
     /// <summary>
     /// PDF token type

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Simple.Structure
 {
@@ -28,10 +29,10 @@ namespace PdfConverter.Simple.Structure
         /// <returns>Found objects</returns>
         public IList<PdfObject> GetObjectsByType(string type)
         {
-            const string TypeAttribName = "Type";
+            const string TypeAttrib = "Type";
 
             return Objects
-                .Where(o => o.GetAttributeValue(TypeAttribName) as string == type)
+                .Where(o => o.GetAttributeValue<PdfAtom>(TypeAttrib)?.AsString() == type)
                 .ToList();
         }
 
@@ -41,10 +42,10 @@ namespace PdfConverter.Simple.Structure
         /// <param name="reference">Reference descriptor</param>
         /// <param name="offset">Number of reference in list</param>
         /// <returns>Object referenced by it's descriptor</returns>
-        public PdfObject GetObjectByRef(IList<object> reference, int offset = 0)
+        public PdfObject GetObjectByRef(PdfArray reference, int offset = 0)
         {
             int objIdListIdx = offset * 3;
-            int referencedObjId = (int)(double)reference[objIdListIdx];
+            int referencedObjId = (int)(reference[objIdListIdx] as PdfAtom).AsNumber();
 
             return GetObjectById(referencedObjId);
         }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Simple.Parsing
 {
@@ -47,14 +48,27 @@ namespace PdfConverter.Simple.Parsing
             }
             else
             {
+                return RetrieveNextTokenFromSource();
+            }
+        }
+
+        private Token RetrieveNextTokenFromSource()
+        {
+            Token readToken = null;
+
+            while(readToken == null)
+            {
                 tokenSource.Dispose();
                 tokenSource = null;
 
-                UpdateTokenSource();
+                bool hasMoreInput = UpdateTokenSource();
                 
-                if(tokenSource.MoveNext())
+                if(hasMoreInput)
                 {
-                    return tokenSource.Current;
+                    if(tokenSource.MoveNext())
+                    {
+                        readToken = tokenSource.Current;
+                    }
                 }
                 else
                 {
@@ -62,14 +76,18 @@ namespace PdfConverter.Simple.Parsing
                     return new Token(TokenType.End);
                 }
             }
+
+            return readToken;
         }
 
-        private void UpdateTokenSource()
+        private bool UpdateTokenSource()
         {
             string nextLine = GetNextNonEmptyLine();
             tokenSource = new ContentTokenizer()
                 .Tokenize(nextLine ?? String.Empty)
                 .GetEnumerator();
+
+            return nextLine != null;
         }
 
         private string GetNextNonEmptyLine()

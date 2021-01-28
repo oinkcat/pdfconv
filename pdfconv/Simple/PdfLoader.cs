@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PdfConverter.Simple.Parsing;
+using PdfConverter.Simple.Primitives;
 using PdfConverter.Simple.Structure;
 
 using MyReader = PdfConverter.Simple.UnbufferedStreamReader;
@@ -16,42 +17,41 @@ namespace PdfConverter.Simple
     /// </summary>
     public class PdfLoader
     {
-        private const string ObjStart = " obj";
+        private const string ObjStart = "obj";
         private const string ObjEnd = "endobj";
         private const string StreamStart = "stream";
-        private const string AttribGroupStart = "<<";
-        private const string AttribGroupEnd = ">>";
+        private const string StreamEnd = "endstream";
+        private const string XrefStart = "xref";
+        private const string PdfEof = "%%EOF";
 
-        private Stream inputFile;
+        private MyReader reader;
+
+        private ObjectParser parser;
 
         private Dictionary<int, PdfObject> objects;
 
         private Dictionary<int, (int, long)> references;
 
+        /// <summary>
+        /// Load all PDF file objects
+        /// </summary>
+        /// <returns>PDF object structure</returns>
         public async Task<PdfObjectRoot> Load()
         {
             // Load objects initially
-            using(var reader = new MyReader(inputFile))
+            using(reader)
             {
-                // Load some objects and references
-                while(!reader.EndOfStream)
+                // Load objects and references
+                do
                 {
-                    string line = (await reader.ReadLineAsync()).Trim();
-                    // Skip comments
-                    if(line.Length == 0 || line.StartsWith("%")) { continue; }
+                    var pdfObject = await ReadNextObject();
 
-                    var streamer = new TokenStreamer(line);
-
-                    int objId = ReadObjectId(streamer);
-                    if(objId > 0)
+                    if(pdfObject != null)
                     {
-                        var pdfObj = await LoadObject(objId, streamer, reader);
-                        if(!objects.ContainsKey(objId))
-                        {
-                            objects.Add(objId, pdfObj);
-                        }
+                        objects.Add(pdfObject.Id, pdfObject);
                     }
                 }
+                while(!reader.EndOfStream);
 
                 // Load linked objects
                 await LoadReferencedObjects();
@@ -60,151 +60,151 @@ namespace PdfConverter.Simple
             return new PdfObjectRoot(objects.Values);
         }
 
-        private int ReadObjectId(TokenStreamer streamer)
+        private async Task<PdfObject> ReadNextObject()
+        {
+            int objId = await ReadObjectId();
+            return (objId > 0)
+                ? await ReadObjectBody(objId)
+                : null;
+        }
+
+        private async Task<int> ReadObjectId()
         {
             var numberParts = new List<double>();
             bool idParsed = false;
 
             while(!idParsed)
             {
-                var currentToken = streamer.GetNextToken();
+                var term = parser.ReadSingleObject();
 
-                if(currentToken.Type == TokenType.Number)
+                if(term is PdfAtom atomTerm)
                 {
-                    numberParts.Add((double)currentToken.Value);
-                }
-                else if(currentToken.Type == TokenType.Id)
-                {
-                    if((currentToken.Value as string).Equals("obj"))
+                    if(atomTerm.Type == TokenType.Number)
                     {
-                        idParsed = true;
+                        numberParts.Add((double)atomTerm.Value);
+                    }
+                    else if(atomTerm.Value as string == ObjStart)
+                    {
+                        if(numberParts.Count == 2)
+                        {
+                            idParsed = true;
+                        }
+                        else
+                        {
+                            return 0;
+                        }
+                    }
+                    else if(atomTerm.Value as string == XrefStart)
+                    {
+                        // Skip Xref and trailer
+                        while(await reader.ReadLineAsync() != PdfEof) { }
                     }
                     else
                     {
                         return 0;
                     }
                 }
-                else
+                else if(term is null)
                 {
-                    return 0;
+                    return -1;
                 }
             }
 
             return (int)numberParts[0];
         }
 
-        private async Task LoadReferencedObjects()
-        {
-            foreach(int objId in references.Keys)
+        private async Task<PdfObject> ReadObjectBody(int id) {
+            var contentTerm = parser.ReadSingleObject();
+            bool hasStream = false;
+            bool objEnded = false;
+
+            (hasStream, objEnded) = CheckIfStreamStartOrObjEnd(contentTerm);
+
+            if(objEnded)
             {
-                (int refId, long objStartPos) = references[objId];
-                int objSize = int.Parse(objects[refId].TextContent[0]);
+                // Object is empty
+                return new PdfObject(id);
+            }
+
+            var newObject = new PdfObject(id, contentTerm);
+            
+            if(!hasStream)
+            {
+                // Stream may follow object attributes
+                var followingTerm = parser.ReadSingleObject();
+                (hasStream, objEnded) = CheckIfStreamStartOrObjEnd(followingTerm);
+            }
+
+            if(hasStream)
+            {
+                var compressAttrVal = newObject.GetAttributeValue<PdfAtom>("Filter");
                 
-                inputFile.Seek(objStartPos, SeekOrigin.Begin);
-                var objContent = await ReadCompressedContent(objSize);
-                objects[objId].BinaryContent = objContent;
-            }
-        }
-
-        private async Task<PdfObject> LoadObject (
-            int id, 
-            TokenStreamer streamer, 
-            MyReader reader
-        ) {
-            var attribParser = new AttributesParser(streamer);
-
-            // Read object attribute group
-            string startLine = null;
-            Token nextToken;
-
-            do
-            {
-                if(streamer.AtEndOfLine)
+                if(compressAttrVal?.Value.Equals("FlateDecode") ?? false)
                 {
-                    startLine = await reader.ReadLineAsync();
-                    streamer.SetSourceLine(startLine);
-                }
-                nextToken = streamer.GetNextToken();
-            }
-            while(nextToken.Type == TokenType.EndOfLine);
+                    var lengthAttrVal = newObject.GetAttributeValue("Length");
 
-            streamer.PushBackToken(nextToken);
-
-            if(nextToken.Type == TokenType.DictStart)
-            {
-                bool needMoreInput = false;
-                do
-                {
-                    if(streamer.AtEndOfLine)
+                    if(lengthAttrVal is PdfSequence refSeq)
                     {
-                        streamer.SetSourceLine(await reader.ReadLineAsync());
+                        // Object body should be loaded later
+                        int referencedId = (int)(refSeq[0] as PdfAtom).AsNumber();
+                        references.Add(id, (referencedId, reader.BaseStream.Position));
+                    }
+                    else if(lengthAttrVal is PdfAtom directLength)
+                    {
+                        // Load body from binary compressed data
+                        int size = (int)directLength.AsNumber();
+                        var content = await ReadCompressedContent(size);
+                        newObject.BinaryContent = content;
+                    }
+                    else
+                    {
+                        throw new Exception("Invalid length attribute value");
                     }
 
-                    needMoreInput = attribParser.FeedNextChunk(null);
-                    if(!needMoreInput) { break; }
-                }
-                while(needMoreInput);
-            }
-
-            var newObject = new PdfObject(id, attribParser.GetParsedAttributes());
-
-            // Read object body
-            if(newObject.GetAttributeValue("Filter")?.Equals("FlateDecode") ?? false)
-            {
-                var streamToken = streamer.GetNextToken();
-
-                if(streamer.AtEndOfLine)
-                {
-                    streamer.SetSourceLine(await reader.ReadLineAsync());
-                    streamToken = streamer.GetNextToken();
-                }
-
-                if(!(streamToken.Value as string).Equals(StreamStart))
-                {
-                    throw new InvalidDataException();
-                }
-                
-                var lengthAttribVal = newObject.GetAttributeValue("Length");
-
-                if(lengthAttribVal is IList<object> lengthRefParams)
-                {
-                    // Object body should be loaded later
-                    int referencedId = (int)(double)lengthRefParams[0];
-                    references.Add(id, (referencedId, reader.BaseStream.Position));
-
-                    // Skip object's content
-                    string bodyLine = startLine;
-                    while(bodyLine != ObjEnd)
-                    {
-                        bodyLine = await reader.ReadLineAsync();
-                    }
+                    // Go to object's end
+                    while(await reader.ReadLineAsync() != ObjEnd) { }
                 }
                 else
                 {
-                    // Load body from binary compressed data
-                    int size = (int)(double)lengthAttribVal;
-                    var content = await ReadCompressedContent(size);
-                    newObject.BinaryContent = content;
-                }
-            }
-            else
-            {
-                // Load body from string data
-                for(string line = startLine;
-                    line != ObjEnd; 
-                    line = await reader.ReadLineAsync())
-                {
-                    newObject.TextContent.Add(line);
+                    // Read uncompressed content
+                    string bodyLine = await reader.ReadLineAsync();
+                    while(bodyLine != ObjEnd)
+                    {
+                        newObject.TextContent.Add(bodyLine);
+                        bodyLine = await reader.ReadLineAsync();
+                    }
                 }
             }
 
             return newObject;
         }
 
+        private (bool, bool) CheckIfStreamStartOrObjEnd(IPdfTerm term)
+        {
+            bool isStreamStart = false;
+            bool isObjectEnd = false;
+
+            if(term is PdfAtom keywordId && keywordId.Type == TokenType.Id)
+            {
+                string keyword = keywordId.Value as string;
+
+                if(keyword == ObjEnd)
+                {
+                    isObjectEnd = true;
+                }
+                else if(keyword == StreamStart)
+                {
+                    isStreamStart = true;
+                }
+            }
+
+            return (isStreamStart, isObjectEnd);
+        }
+
         private async Task<byte[]> ReadCompressedContent(int length)
         {
             var compressedBytes = new byte[length];
-            await inputFile.ReadAsync(compressedBytes, 0, length);
+            await reader.BaseStream.ReadAsync(compressedBytes, 0, length);
 
             using var buffer = new MemoryStream(compressedBytes[2..]);
             using var decoder = new DeflateStream(buffer, CompressionMode.Decompress);
@@ -214,9 +214,24 @@ namespace PdfConverter.Simple
             return decodedData.GetBuffer();
         }
 
+        private async Task LoadReferencedObjects()
+        {
+            foreach(int objId in references.Keys)
+            {
+                (int refId, long objStartPos) = references[objId];
+                int objSize = (int)(double)objects[refId].ContentAs<PdfAtom>().Value;
+                
+                reader.BaseStream.Seek(objStartPos, SeekOrigin.Begin);
+                var objContent = await ReadCompressedContent(objSize);
+                objects[objId].BinaryContent = objContent;
+            }
+        }
+
         public PdfLoader(Stream inFile)
         {
-            inputFile = inFile;
+            reader = new MyReader(inFile);
+            parser = new ObjectParser(NewTokenStreamer.CreateFromReader(reader));
+
             objects = new Dictionary<int, PdfObject>();
             references = new Dictionary<int, (int, long)>();
         }

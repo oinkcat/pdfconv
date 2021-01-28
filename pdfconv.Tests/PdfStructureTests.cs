@@ -2,6 +2,7 @@ using System.IO;
 using System.Collections.Generic;
 using Xunit;
 using PdfConverter.Simple;
+using PdfConverter.Simple.Primitives;
 using PdfConverter.Simple.Structure;
 
 namespace PdfConverter.Tests
@@ -21,10 +22,10 @@ namespace PdfConverter.Tests
         [Fact]
         public void TestPdfCatalogAndPageCount()
         {
-            var pagesRef = TestObjRoot.Catalog.GetAttributeValue<List<object>>("Pages");
+            var pagesRef = TestObjRoot.Catalog.GetAttributeValue<PdfArray>("Pages");
             var pagesObj = TestObjRoot.GetObjectByRef(pagesRef);
 
-            int pagesCount = (int)pagesObj.GetAttributeValue<double>("Count");
+            int pagesCount = (int)pagesObj.GetAttributeValue<PdfAtom>("Count").AsNumber();
 
             Assert.Equal(3, pagesCount);
         }
@@ -35,19 +36,19 @@ namespace PdfConverter.Tests
         [Fact]
         public void TestPdfPageObjects()
         {
-            var pagesRef = TestObjRoot.Catalog.GetAttributeValue<List<object>>("Pages");
+            var pagesRef = TestObjRoot.Catalog.GetAttributeValue<PdfArray>("Pages");
             var pagesObj = TestObjRoot.GetObjectByRef(pagesRef);
 
-            var pageKids = pagesObj.GetAttributeValue<List<object>>("Kids");
+            var pageKids = pagesObj.GetAttributeValue<PdfArray>("Kids");
             Assert.NotEmpty(pageKids);
 
-            int pagesCount = (int)pagesObj.GetAttributeValue<double>("Count");
+            int pagesCount = (int)pagesObj.GetAttributeValue<PdfAtom>("Count").AsNumber();
             Assert.Equal(3, pagesCount);
 
             for(int i = 0; i < pagesCount; i++)
             {
-                var singlePageObj = TestObjRoot.GetObjectByRef(pageKids, i);
-                string pageType = singlePageObj.GetAttributeValue<string>("Type");
+                var pageObj = TestObjRoot.GetObjectByRef(pageKids, i);
+                string pageType = pageObj.GetAttributeValue<PdfAtom>("Type").AsString();
 
                 Assert.Equal("Page", pageType);
             }
@@ -59,27 +60,29 @@ namespace PdfConverter.Tests
         [Fact]
         public void TestPdfResources()
         {
-            var pagesRef = TestObjRoot.Catalog.GetAttributeValue<List<object>>("Pages");
+            var pagesRef = TestObjRoot.Catalog.GetAttributeValue<PdfArray>("Pages");
             var pagesObj = TestObjRoot.GetObjectByRef(pagesRef);
 
-            var resourcesRef = pagesObj.GetAttributeValue<List<object>>("Resources");
+            var resourcesRef = pagesObj.GetAttributeValue<PdfArray>("Resources");
             var resourcesObj = TestObjRoot.GetObjectByRef(resourcesRef);
 
-            var fontTableRef = resourcesObj.GetAttributeValue<List<object>>("Font");
+            var fontTableRef = resourcesObj.GetAttributeValue<PdfArray>("Font");
             var fontTableObj = TestObjRoot.GetObjectByRef(fontTableRef);
             Assert.NotNull(fontTableObj);
 
             for(int n = 1;; n++)
             {
                 string fontRefAttrName = string.Concat("F", n);
-                var fontRef = fontTableObj.GetAttributeValue<List<object>>(fontRefAttrName);
+                var fontRef = fontTableObj.GetAttributeValue<PdfArray>(fontRefAttrName);
 
                 if(fontRef == null) { break; }
 
                 var fontObj = TestObjRoot.GetObjectByRef(fontRef);
 
                 Assert.NotNull(fontObj);
-                Assert.Equal("Font", fontObj.GetAttributeValue<string>("Type"));
+                
+                string fontObjType = fontObj.GetAttributeValue<PdfAtom>("Type")?.AsString();
+                Assert.Equal("Font", fontObjType);
             }
         }
 
@@ -90,7 +93,7 @@ namespace PdfConverter.Tests
         public void TestPdfRequiredObjects()
         {
             var pagesObj = TestObjRoot.GetObjectsByType("Pages")[0];
-            var resourcesRef = pagesObj.GetAttributeValue<List<object>>("Resources");
+            var resourcesRef = pagesObj.GetAttributeValue<PdfArray>("Resources");
             var resourceObj = TestObjRoot.GetObjectByRef(resourcesRef);
 
             // Font objects
@@ -99,7 +102,7 @@ namespace PdfConverter.Tests
 
             foreach(var fontObj in fontObjs)
             {
-                var toUnicodeRef = fontObj.GetAttributeValue<List<object>>("ToUnicode");
+                var toUnicodeRef = fontObj.GetAttributeValue<PdfArray>("ToUnicode");
                 var toUnicodeObj = TestObjRoot.GetObjectByRef(toUnicodeRef);
                 Assert.True(toUnicodeObj.HasStream);
 
@@ -113,13 +116,13 @@ namespace PdfConverter.Tests
 
             foreach(var page in TestObjRoot.GetObjectsByType("Page"))
             {
-                var pageResourcesRef = page.GetAttributeValue<List<object>>("Resources");
+                var pageResourcesRef = page.GetAttributeValue<PdfArray>("Resources");
                 Assert.NotNull(pageResourcesRef);
 
                 var pageResourceObj = TestObjRoot.GetObjectByRef(pageResourcesRef);
                 Assert.Same(resourceObj, pageResourceObj);
 
-                var pageContentsRef = page.GetAttributeValue<List<object>>("Contents");
+                var pageContentsRef = page.GetAttributeValue<PdfArray>("Contents");
                 Assert.NotNull(pageContentsRef);
 
                 var contents = TestObjRoot.GetObjectByRef(pageContentsRef);

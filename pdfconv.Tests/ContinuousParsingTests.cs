@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using Xunit;
 using PdfConverter.Simple.Parsing;
+using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Tests
 {
