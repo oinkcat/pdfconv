@@ -230,7 +230,7 @@ namespace PdfConverter.Simple
         public PdfLoader(Stream inFile)
         {
             reader = new MyReader(inFile);
-            parser = new ObjectParser(NewTokenStreamer.CreateFromReader(reader));
+            parser = new ObjectParser(TokenStreamer.CreateFromReader(reader));
 
             objects = new Dictionary<int, PdfObject>();
             references = new Dictionary<int, (int, long)>();

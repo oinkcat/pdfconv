@@ -23,7 +23,7 @@ namespace PdfConverter.Tests
             const int NumTokensInTestString = 35;
 
             using var contentReader = CreateStringReader(ObjectContent);
-            var streamer = NewTokenStreamer.CreateFromReader(contentReader);
+            var streamer = TokenStreamer.CreateFromReader(contentReader);
 
             Token currentToken;
             int numTokensRead = 0;

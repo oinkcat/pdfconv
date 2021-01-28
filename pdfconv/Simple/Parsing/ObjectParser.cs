@@ -8,7 +8,7 @@ namespace PdfConverter.Simple.Parsing
     /// </summary>
     public class ObjectParser
     {
-        private NewTokenStreamer tokener;
+        private TokenStreamer tokener;
 
         /// <summary>
         /// Read one PDF object from stream
@@ -99,7 +99,7 @@ namespace PdfConverter.Simple.Parsing
             }
         }
 
-        public ObjectParser(NewTokenStreamer tokenStreamer)
+        public ObjectParser(TokenStreamer tokenStreamer)
         {
             tokener = tokenStreamer;
         }

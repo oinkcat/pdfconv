@@ -50,13 +50,15 @@ namespace PdfConverter.Tests
         {
             const string CompressionAttrib = "Filter";
 
-            var attribParser = new AttributesParser();
+            using var linesReader = CreateStringReader(BasicString);
+            var streamer = TokenStreamer.CreateFromReader(linesReader);
+            var attribParser = new ObjectParser(streamer);
 
-            bool needMoreInput = attribParser.FeedNextChunk(BasicString);
-            var attribs = attribParser.GetParsedAttributes();
-
-            Assert.False(needMoreInput);
+            var attribs = attribParser.ReadSingleObject() as PdfDictionary;
             Assert.Contains(CompressionAttrib, attribs.Keys);
+
+            var nextToken = attribParser.ReadSingleObject();
+            Assert.Null(nextToken);
         }
 
         /// <summary>
@@ -66,20 +68,14 @@ namespace PdfConverter.Tests
         public void TestParseComplexAttribs()
         {
             using var linesReader = CreateStringReader(ComplexString);
-            var attribParser = new AttributesParser();
-            bool needMoreInput = true;
+            var streamer = TokenStreamer.CreateFromReader(linesReader);
+            var attribParser = new ObjectParser(streamer);
 
-            while(!linesReader.EndOfStream)
-            {
-                string line = linesReader.ReadLine().Trim();
+            var attribDict = attribParser.ReadSingleObject();
+            Assert.IsType<PdfDictionary>(attribDict);
 
-                if(line.Length > 0)
-                {
-                    needMoreInput = attribParser.FeedNextChunk(line);
-                }
-            }
-
-            Assert.False(needMoreInput);
+            var nextTerm = attribParser.ReadSingleObject();
+            Assert.Null(nextTerm);
         }
 
         // Create text lines reader for string

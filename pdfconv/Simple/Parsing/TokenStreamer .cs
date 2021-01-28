@@ -8,7 +8,7 @@ namespace PdfConverter.Simple.Parsing
     /// <summary>
     /// Yields tokens sequentially (new version)
     /// </summary>
-    public class NewTokenStreamer 
+    public class TokenStreamer 
     {
         private ITokenStreamSource lineSource;
 
@@ -107,17 +107,17 @@ namespace PdfConverter.Simple.Parsing
             return lineRead;
         }
 
-        public static NewTokenStreamer CreateFromReader(TextReader reader)
+        public static TokenStreamer CreateFromReader(TextReader reader)
         {
-            return new NewTokenStreamer(new TextReaderTokenSource(reader));
+            return new TokenStreamer(new TextReaderTokenSource(reader));
         }
 
-        public static NewTokenStreamer CreateFromList(IList<string> stringList)
+        public static TokenStreamer CreateFromList(IList<string> stringList)
         {
-            return new NewTokenStreamer(new StringListTokenSource(stringList));
+            return new TokenStreamer(new StringListTokenSource(stringList));
         }
 
-        public NewTokenStreamer(ITokenStreamSource lineSource)
+        public TokenStreamer(ITokenStreamSource lineSource)
         {
             this.lineSource = lineSource;
             UpdateTokenSource();

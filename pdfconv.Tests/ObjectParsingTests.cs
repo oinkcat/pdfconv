@@ -29,8 +29,8 @@ namespace PdfConverter.Tests
         [Fact]
         public void TestObjectParsing()
         {
-            var streamer = new TokenStreamer();
-            streamer.SetSourceLine(ObjectContent);
+            var sourceList = new List<string> { ObjectContent };
+            var streamer = TokenStreamer.CreateFromList(sourceList);
 
             // Read object id
             var currentToken = Token.EOL;
@@ -40,15 +40,12 @@ namespace PdfConverter.Tests
             }
 
             Assert.Equal("obj", currentToken.Value as string);
-            Assert.False(streamer.AtEndOfLine);
 
             // Read attribute dict
-            var attribParser = new AttributesParser(streamer);
-            bool needMoreInput = attribParser.FeedNextChunk(null);
-            var parsedAttribs = attribParser.GetParsedAttributes();
+            var attribParser = new ObjectParser(streamer);
+            var parsedAttribs = attribParser.ReadSingleObject() as PdfDictionary;
 
-            Assert.False(needMoreInput);
-            Assert.Equal(804, (int)(double)parsedAttribs["Length"]);
+            Assert.Equal(804, (int)(parsedAttribs["Length"] as PdfAtom).AsNumber());
 
             // Read body stream start token
             var streamStartToken = streamer.GetNextToken();
@@ -63,7 +60,7 @@ namespace PdfConverter.Tests
         public void TestAllTermsParsing()
         {
             var sourceList = new List<string> { ObjectContent };
-            var streamer = NewTokenStreamer.CreateFromList(sourceList);
+            var streamer = TokenStreamer.CreateFromList(sourceList);
             var parser = new ObjectParser(streamer);
 
             var allTerms = new List<IPdfTerm>();
@@ -90,7 +87,7 @@ namespace PdfConverter.Tests
         public void TestObjectTermsParsing()
         {
             var sourceList = new List<string>(ComplexObjectContent.Split("\r\n"));
-            var streamer = NewTokenStreamer.CreateFromList(sourceList);
+            var streamer = TokenStreamer.CreateFromList(sourceList);
             var parser = new ObjectParser(streamer);
 
             IPdfTerm term = parser.ReadSingleObject();
