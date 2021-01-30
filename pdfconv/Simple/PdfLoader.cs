@@ -46,7 +46,7 @@ namespace PdfConverter.Simple
                 {
                     var pdfObject = await ReadNextObject();
 
-                    if(pdfObject != null)
+                    if(pdfObject != null && !objects.ContainsKey(pdfObject.Id))
                     {
                         objects.Add(pdfObject.Id, pdfObject);
                     }

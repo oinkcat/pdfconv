@@ -12,6 +12,8 @@ namespace PdfConverter.Simple.Parsing
     {
         private ITokenStreamSource lineSource;
 
+        private ContentTokenizer lineTokenizer;
+
         private IEnumerator<Token> tokenSource;
 
         private Token pushedBackToken;
@@ -83,7 +85,7 @@ namespace PdfConverter.Simple.Parsing
         private bool UpdateTokenSource()
         {
             string nextLine = GetNextNonEmptyLine();
-            tokenSource = new ContentTokenizer()
+            tokenSource = lineTokenizer
                 .Tokenize(nextLine ?? String.Empty)
                 .GetEnumerator();
 
@@ -120,6 +122,8 @@ namespace PdfConverter.Simple.Parsing
         public TokenStreamer(ITokenStreamSource lineSource)
         {
             this.lineSource = lineSource;
+            this.lineTokenizer = new ContentTokenizer();
+
             UpdateTokenSource();
         }
     }

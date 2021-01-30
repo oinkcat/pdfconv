@@ -51,6 +51,33 @@ namespace PdfConverter.Simple.Structure
         }
 
         /// <summary>
+        /// Get direct or indirect object from attributes dictionary
+        /// </summary>
+        /// <param name="parentObj">Object that contains sought object</param>
+        /// <param name="keyName">Object name</param>
+        /// <returns>Object by specified name</returns>
+        public PdfObject GetObjectFromAttrib(PdfObject parentObj, string keyName)
+        {
+            var childObj = parentObj.GetAttributeValue(keyName);
+
+            if(childObj == null)
+            {
+                // No nested object found with given name
+                return null;
+            }
+            else if(childObj is PdfSequence)
+            {
+                // Indirect object
+                return GetObjectByRef(childObj as PdfArray);
+            }
+            else
+            {
+                // Wrap value in temporary object
+                return PdfObject.CreateAsWrappedContent(childObj);
+            }
+        }
+
+        /// <summary>
         /// Pdf root object
         /// </summary>
         public PdfObject Catalog { get; }

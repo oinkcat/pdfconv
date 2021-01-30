@@ -43,7 +43,6 @@ namespace PdfConverter.Simple.Structure
             var pagesObj = ObjectRoot.GetObjectsByType("Pages")[0];
 
             PopulatePages(pagesObj);
-            PopulateFonts(pagesObj);
         }
 
         // Fill pages information
@@ -52,6 +51,7 @@ namespace PdfConverter.Simple.Structure
             var pageRefs = pagesObj.GetAttributeValue<PdfArray>("Kids");
             int kidsCount = pageRefs.Count / 3;
             
+            // Nested page elements
             for(int i = 0; i < kidsCount; i++)
             {
                 var kidPageObj = ObjectRoot.GetObjectByRef(pageRefs, i);
@@ -59,41 +59,41 @@ namespace PdfConverter.Simple.Structure
                 if(kidPageObj.Type == "Page")
                 {
                     Pages.Add(new PdfPage(this, kidPageObj));
+
+                    // Font resources in Page obj
+                    PopulateFonts(kidPageObj);
                 }
-                /*
                 else if(kidPageObj.Type == "Pages")
                 {
                     // Nested pages (?)
                     PopulatePages(kidPageObj);
                 }
-                */
             }
+
+            // Font resources in Pages obj
+            PopulateFonts(pagesObj);
         }
 
         // Fill font information
-        private void PopulateFonts(PdfObject pagesObj)
+        private void PopulateFonts(PdfObject containerObj)
         {            
-            var resourcesRef = pagesObj.GetAttributeValue<PdfArray>("Resources");
-            var resourcesObj = ObjectRoot.GetObjectByRef(resourcesRef);
-            var fontResRef = resourcesObj.GetAttributeValue<PdfArray>("Font");
-            var fontResObj = ObjectRoot.GetObjectByRef(fontResRef);
+            var resourcesObj = ObjectRoot.GetObjectFromAttrib(containerObj, "Resources");
+            if(resourcesObj == null) { return; }
 
-            for(int i = 1;; i++)
+            var fontResObj = ObjectRoot.GetObjectFromAttrib(resourcesObj, "Font");
+
+            foreach(var kv in fontResObj.ContentAs<PdfDictionary>())
             {
-                string fontName = $"F{i}";
-                var fontRef = fontResObj.GetAttributeValue<PdfArray>(fontName);
+                if(Fonts.ContainsKey(kv.Key)) { continue; }
 
-                if(fontRef == null) { break; }
-
-                var fontObj = ObjectRoot.GetObjectByRef(fontRef);
+                var fontObj = ObjectRoot.GetObjectByRef(kv.Value as PdfSequence);
 
                 var toUnicodeObj = fontObj.GetAttributeValue("ToUnicode");
-                if(toUnicodeObj == null)
-                {
-                    throw new NotImplementedException("Only Unicode fonts supported");
-                }
+                var pdfFontResource = (toUnicodeObj == null)
+                    ? new PdfStandardFont(this, fontObj) as PdfFont
+                    : new PdfUnicodeFont(this, fontObj);
 
-                Fonts.Add(fontName, new PdfUnicodeFont(this, fontObj));
+                Fonts.Add(kv.Key, pdfFontResource);
             }
         }
 

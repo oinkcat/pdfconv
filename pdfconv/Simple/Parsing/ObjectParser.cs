@@ -77,13 +77,11 @@ namespace PdfConverter.Simple.Parsing
             
             var nextToken = tokener.GetNextToken();
 
-            if((nextToken.Type == TokenType.Number) ||
-               (nextToken.Type == TokenType.Id))
+            if(nextToken.IsAtomic && nextToken.Type != TokenType.Name)
             {
                 var sequence = new PdfSequence { firstElement };
                 
-                while((nextToken.Type == TokenType.Number) ||
-                      (nextToken.Type == TokenType.Id))
+                while(nextToken.IsAtomic && nextToken.Type != TokenType.Name)
                 {
                     sequence.Add(new PdfAtom(nextToken));
                     nextToken = tokener.GetNextToken();

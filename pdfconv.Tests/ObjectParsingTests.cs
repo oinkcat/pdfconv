@@ -23,6 +23,8 @@ namespace PdfConverter.Tests
             ]
         ";
 
+        private const string ObjectWithComplexString = @"[1 2 (TESTING \(test\)) 3]";
+
         /// <summary>
         /// Test parsing multipart object contents
         /// </summary>
@@ -95,6 +97,20 @@ namespace PdfConverter.Tests
 
             var firstArrayElement = (term as PdfArray)[0];
             Assert.IsType<PdfDictionary>(firstArrayElement);
+        }
+
+        /// <summary>
+        /// Test parsing object that contains string with escaped brackets
+        /// </summary>
+        [Fact]
+        public void TestObjectWithComplexStringParsing()
+        {
+            var sourceList = new List<string> { ObjectWithComplexString };
+            var parser = new ObjectParser(TokenStreamer.CreateFromList(sourceList));
+
+            var parsedObj = parser.ReadSingleObject() as PdfArray;
+
+            Assert.Equal(4, parsedObj.Count);
         }
     }
 }

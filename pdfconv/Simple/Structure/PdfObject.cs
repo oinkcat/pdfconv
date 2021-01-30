@@ -96,6 +96,16 @@ namespace PdfConverter.Simple.Structure
             }
         }
 
+        /// <summary>
+        /// Create temporary object from content
+        /// </summary>
+        /// <param name="content">Content to wrap as object</param>
+        /// <returns>Content wrapper object</returns>
+        public static PdfObject CreateAsWrappedContent(IPdfTerm content)
+        {
+            return new PdfObject(-1, content);
+        }
+
         public PdfObject(int id, IPdfTerm content = null)
         {
             Id = id;

@@ -16,6 +16,10 @@ namespace PdfConverter.Simple.Structure
 
         private PdfFont currentFont;
 
+        private bool textOutputStarted;
+
+        private StringBuilder lineBuffer;
+
         /// <summary>
         /// Convert page content instuction stream to text
         /// </summary>
@@ -31,10 +35,8 @@ namespace PdfConverter.Simple.Structure
         private void ExtractTextFromPage(PdfPage page, IList<string> outLines)
         {
             var tokenizer = new ContentTokenizer();
-            bool textOutputStarted = false;
 
             var tokensBuffer = new List<Token>();
-            var lineBuffer = new StringBuilder();
 
             foreach(string contentLine in page.RawContent)
             {
@@ -45,7 +47,7 @@ namespace PdfConverter.Simple.Structure
 
                 if(textOutputStarted)
                 {
-                    if(tokensBuffer[0].Value as string == "ET")
+                    if(tokensBuffer.FirstOrDefault()?.Value as string == "ET")
                     {
                         outLines.Add(lineBuffer.ToString());
                         lineBuffer.Clear();
@@ -55,10 +57,14 @@ namespace PdfConverter.Simple.Structure
                     else
                     {
                         string chunkText = GetTextFromOutputInstructions(tokensBuffer);
-                        lineBuffer.Append(chunkText);
+
+                        if(chunkText != null)
+                        {
+                            lineBuffer.Append(chunkText);
+                        }
                     }
                 }
-                else if(tokensBuffer[0].Value as string == "BT")
+                else if(tokensBuffer.FirstOrDefault()?.Value as string == "BT")
                 {
                     textOutputStarted = true;
                 }
@@ -95,27 +101,44 @@ namespace PdfConverter.Simple.Structure
                 }
             }
 
-            throw new Exception("No text output instructions found in line!");
+            return null;
         }
 
         private string GetStringFromTextTokens(IList<Token> tokens, PdfFont font)
         {
-            var textBuffer = new StringBuilder();
+            var stringTokens = tokens.Where(t => {
+                return t.Type == TokenType.HexString || t.Type == TokenType.String;
+            });
 
-            var tokenValues = tokens
-                .Where(t => t.Type == TokenType.HexString)
-                .Select(t => t.Value);
+            if(stringTokens.Any())
+            {
+                var textBuffer = new StringBuilder();
 
-            string hexString = String.Join(String.Empty, tokenValues);
-            string decodedText = font.DecodeString(hexString);
-            textBuffer.Append(decodedText);
+                foreach(var token in stringTokens)
+                {
+                    if(token.Type == TokenType.String)
+                    {
+                        textBuffer.Append(token.Value as string);
+                    }
+                    else
+                    {
+                        string decodedText = font.DecodeString(token.Value as string);
+                        textBuffer.Append(decodedText);
+                    }
+                }
 
-            return textBuffer.ToString();
+                return textBuffer.ToString();
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public PdfTextExtractor(PdfDocument document)
         {
             this.document = document;
+            lineBuffer = new StringBuilder();
         }
     }
 }

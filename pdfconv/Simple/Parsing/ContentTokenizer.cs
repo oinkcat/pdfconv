@@ -109,7 +109,19 @@ namespace PdfConverter.Simple.Parsing
 					? (int)TokenType.StringEnd
 					: (int)TokenType.HexStringEnd;
 
-				int strEndPos = inString.IndexOf(delimiters[endTokenTypeIdx], tokenPos);
+				int strEndPos = -1;
+				int searchPos = tokenPos;
+				bool stringIsUnescaped = false;
+
+				while(!stringIsUnescaped)
+				{
+					strEndPos = inString.IndexOf(delimiters[endTokenTypeIdx], searchPos);
+					if(strEndPos < 0) { break; }
+
+					stringIsUnescaped = inString[strEndPos - 1] != '\\';
+					searchPos = strEndPos + 1;
+				}
+
 				bool isMultilineString = strEndPos < 0;
 
 				if(isMultilineString)
