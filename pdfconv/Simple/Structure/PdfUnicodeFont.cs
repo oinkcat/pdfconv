@@ -12,10 +12,8 @@ namespace PdfConverter.Simple.Structure
     /// </summary>
     public class PdfUnicodeFont : PdfFont
     {
-        private const string BfCharSectionStart = "beginbfchar";
+        private const string CodeSpaceSectionEnd = "endcodespacerange";
         private const string BfCharSectionEnd = "endbfchar";
-
-        private const string BfRangeSectionStart = "beginbfrange";
         private const string BfRangeSectionEnd = "endbfrange";
 
         private Dictionary<string, char> conversionTable;
@@ -58,95 +56,75 @@ namespace PdfConverter.Simple.Structure
             ParseConversionTables(toUnicodeObj.TextContent);
         }
 
-        // TODO: Parse beginbfrange - endbfrange
         private void ParseConversionTables(IList<string> objContents)
         {
-            var tokenizer = new ContentTokenizer();
-            var lineEnumerator = objContents.GetEnumerator();
+            var parser = new ObjectParser(TokenStreamer.CreateFromList(objContents));
 
-            while(lineEnumerator.MoveNext())
+            PdfAtom command;
+            var paramList = new List<IPdfTerm>();
+
+            do
             {
-                var lineTokens = tokenizer.Tokenize(lineEnumerator.Current).ToList();
-                if(lineTokens.Count == 0) { continue; }
-                
-                var lastTokenValue = lineTokens.Last().Value as string;
+                command = parser.ReadNextCommand(paramList);
 
-                if(lastTokenValue == BfCharSectionStart)
+                switch(command?.AsString())
                 {
-                    ParseBfCharSection(lineEnumerator);
+                    case CodeSpaceSectionEnd:
+                        CheckSidSize(paramList);
+                        break;
+                    case BfCharSectionEnd:
+                        FillSidToCharMap(paramList);
+                        break;
+                    case BfRangeSectionEnd:
+                        FillSidToCharMapFromRanges(paramList);
+                        break;
                 }
-                else if(lastTokenValue == BfRangeSectionStart)
+
+                paramList.Clear();
+            }
+            while(command != null);
+        }
+
+        private void CheckSidSize(List<IPdfTerm> elements)
+        {
+            foreach(var cid in elements)
+            {
+                int cidElemSize = (cid as PdfAtom).AsString().Length;
+                if(cidElemSize > cidSize)
                 {
-                    ParseBfRangeSection(lineEnumerator);
+                    cidSize = cidElemSize;
                 }
             }
         }
 
-        private void ParseBfCharSection(IEnumerator<string> lineEnumerator)
+        private void FillSidToCharMap(IList<IPdfTerm> elements)
         {
-            bool hasMoreData = true;
-            var tokenizer = new ContentTokenizer();
-
-            while(hasMoreData)
+            for(int i = 0; i < elements.Count; i += 2)
             {
-                lineEnumerator.MoveNext();
-
-                var lineTokens = tokenizer.Tokenize(lineEnumerator.Current).ToList();
-
-                if((lineTokens.Count == 2) &&
-                   (lineTokens[0].Type == TokenType.HexString))
-                {
-                    string fromCharHex = lineTokens[0].Value as string;
-                    string toCharHex = lineTokens[1].Value as string;
-                    int toCharCode = int.Parse(toCharHex, NumberStyles.HexNumber);
-                    conversionTable.Add(fromCharHex, (char)toCharCode);
-                }
-                else if(lineTokens.Count == 1 && lineTokens[0].Type == TokenType.Id)
-                {
-                    string keyword = lineTokens[0].Value as string;
-                    hasMoreData = !keyword.Equals(BfCharSectionEnd);
-                }
+                string fromCharHex = (elements[i] as PdfAtom).AsString();
+                string toCharHex = (elements[i + 1] as PdfAtom).AsString();
+                int toCharCode = int.Parse(toCharHex, NumberStyles.HexNumber);
+                conversionTable.Add(fromCharHex, (char)toCharCode);
             }
         }
 
-        private void ParseBfRangeSection(IEnumerator<string> lineEnumerator)
+        private void FillSidToCharMapFromRanges(IList<IPdfTerm> elements)
         {
-            bool hasMoreData = true;
-            var tokenizer = new ContentTokenizer();
-
-            while(hasMoreData)
+            for(int i = 0; i < elements.Count; i += 3)
             {
-                lineEnumerator.MoveNext();
+                string rangeStartHex = (elements[i] as PdfAtom).AsString();
+                string rangeEndHex = (elements[i + 1] as PdfAtom).AsString();
+                string mappedCharHex = (elements[i + 2] as PdfAtom).AsString();
 
-                var lineTokens = tokenizer.Tokenize(lineEnumerator.Current).ToList();
+                int rangeStart = int.Parse(rangeStartHex, NumberStyles.HexNumber);
+                int rangeEnd = int.Parse(rangeEndHex, NumberStyles.HexNumber);
+                int mapped = int.Parse(mappedCharHex, NumberStyles.HexNumber);
 
-                if((lineTokens.Count == 3) &&
-                   (lineTokens[0].Type == TokenType.HexString))
+                for(int cid = rangeStart; cid <= rangeEnd; cid++)
                 {
-                    string rangeStartHex = lineTokens[0].Value as string;
-                    string rangeEndHex = lineTokens[1].Value as string;
-                    string mappedCharHex = lineTokens[2].Value as string;
-
-                    if(rangeStartHex.Length > cidSize)
-                    {
-                        cidSize = rangeStartHex.Length;
-                    }
-
-                    int rangeStart = int.Parse(rangeStartHex, NumberStyles.HexNumber);
-                    int rangeEnd = int.Parse(rangeEndHex, NumberStyles.HexNumber);
-                    int mapped = int.Parse(mappedCharHex, NumberStyles.HexNumber);
-
-                    for(int i = rangeStart; i <= rangeEnd; i++)
-                    {
-                        string mapFromHex = i.ToString($"x{cidSize}").ToUpper();
-                        conversionTable.Add(mapFromHex, (char)mapped);
-                        mapped++;
-                    }
-                }
-                else if(lineTokens.Count == 1 && lineTokens[0].Type == TokenType.Id)
-                {
-                    string keyword = lineTokens[0].Value as string;
-                    hasMoreData = !keyword.Equals(BfRangeSectionEnd);
+                    string mapFromHex = cid.ToString($"x{cidSize}").ToUpper();
+                    conversionTable.Add(mapFromHex, (char)mapped);
+                    mapped++;
                 }
             }
         }

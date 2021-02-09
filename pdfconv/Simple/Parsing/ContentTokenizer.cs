@@ -11,12 +11,12 @@ namespace PdfConverter.Simple.Parsing
     public class ContentTokenizer
     {
         private static string[] delimiters = {
-    		"<<", ">>",
-            "<", ">",
+			" ", "/",
     		"(", ")",
+    		"<<", ">>",
     		"[", "]",
-    		" ", "%",
-			"/"
+            "<", ">",
+			"%"
         };
 
 		private string unClosedStringTokenValue;
@@ -71,19 +71,22 @@ namespace PdfConverter.Simple.Parsing
 
 		// Find next token starting position and delimiter type
 		private (int, int) GetNextTokenStartPos(string inString, int startPos)
-		{    			
+		{
 			int delimPos = inString.Length;
 			int delimType = -1;
 			
 			for(int tokIdx = 0; tokIdx < delimiters.Length; tokIdx++)
 			{
-				int pos = inString.IndexOf(delimiters[tokIdx], startPos);
+				int count = delimPos - startPos;
+				int pos = inString.IndexOf(delimiters[tokIdx], startPos, count);
 				if(pos > -1)
 				{
 					if(pos < delimPos)
 					{
 						delimPos = pos;
 						delimType = tokIdx;
+
+						if(delimPos == 0) { break; }
 					}
 				}
 			}

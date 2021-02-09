@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using PdfConverter.Simple.Primitives;
 
 namespace PdfConverter.Simple.Parsing
@@ -15,6 +16,31 @@ namespace PdfConverter.Simple.Parsing
         /// </summary>
         /// <returns>parsed PDF object</returns>
         public IPdfTerm ReadSingleObject() => ParseTerm();
+
+        /// <summary>
+        /// Read PDF command and fill it's parameters list
+        /// </summary>
+        /// <param name="parameters">Command's parameters list</param>
+        /// <returns>Command name</returns>
+        public PdfAtom ReadNextCommand(IList<IPdfTerm> parameters)
+        {
+            bool commandRead = false;
+            IPdfTerm parsedTerm = null;
+
+            while(!commandRead)
+            {
+                parsedTerm = ParseTerm();
+                commandRead = (parsedTerm == null) ||
+                              (parsedTerm is PdfAtom atom && atom.Type == TokenType.Id);
+
+                if(!commandRead)
+                {
+                    parameters.Add(parsedTerm);
+                }
+            }
+
+            return parsedTerm as PdfAtom;
+        }
 
         // Parse single PDF structure element
         private IPdfTerm ParseTerm()

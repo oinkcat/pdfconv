@@ -7,17 +7,17 @@ namespace PdfConverter.Simple.Primitives
     /// </summary>
     public enum TokenType
     {
-        DictStart,
-        DictEnd,
-        HexStringStart,
-        HexStringEnd,
+        Space,
+        Slash,
         StringStart,
         StringEnd,
+        DictStart,
+        DictEnd,
         ArrayStart,
         ArrayEnd,
-        Space,
+        HexStringStart,
+        HexStringEnd,
         Comment,
-        Slash,
         Number,
         Id,
         Name,
