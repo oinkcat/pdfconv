@@ -21,7 +21,7 @@ namespace PdfConverter.Simple.Structure
         private int cidSize;
 
         /// <summary>
-        /// Decode string using nicode conversion table
+        /// Decode string using unicode conversion table
         /// </summary>
         /// <param name="input">String to decode</param>
         /// <returns>Decoded unicode string</returns>

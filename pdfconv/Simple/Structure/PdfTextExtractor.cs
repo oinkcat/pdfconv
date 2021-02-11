@@ -16,9 +16,9 @@ namespace PdfConverter.Simple.Structure
 
         private PdfFont currentFont;
 
-        private bool textOutputStarted;
-
         private StringBuilder lineBuffer;
+
+        private IList<string> outputLines;
 
         /// <summary>
         /// Convert page content instuction stream to text
@@ -26,112 +26,97 @@ namespace PdfConverter.Simple.Structure
         /// <param name="outLines">Output text lines</param>
         public void ExtractText(IList<string> outLines)
         {
+            outputLines = outLines;
+
             foreach(var page in document.Pages)
             {
-                ExtractTextFromPage(page, outLines);
+                ExtractTextFromPage(page);
             }
         }
 
-        private void ExtractTextFromPage(PdfPage page, IList<string> outLines)
+        private void ExtractTextFromPage(PdfPage page)
         {
-            var tokenizer = new ContentTokenizer();
+            var streamer = TokenStreamer.CreateFromList(page.RawContent);
+            var parser = new ObjectParser(streamer);
 
-            var tokensBuffer = new List<Token>();
+            PdfAtom command;
+            var paramList = new List<IPdfTerm>();
 
-            foreach(string contentLine in page.RawContent)
+            do
             {
-                var lineTokens = tokenizer.Tokenize(contentLine);
-                tokensBuffer.AddRange(lineTokens);
+                command = parser.ReadNextCommand(paramList);
 
-                if(!tokenizer.IsFullyTokenized) { continue; }
-
-                if(textOutputStarted)
+                if(command != null)
                 {
-                    if(tokensBuffer.FirstOrDefault()?.Value as string == "ET")
-                    {
-                        outLines.Add(lineBuffer.ToString());
-                        lineBuffer.Clear();
-
-                        textOutputStarted = false;
-                    }
-                    else
-                    {
-                        string chunkText = GetTextFromOutputInstructions(tokensBuffer);
-
-                        if(chunkText != null)
-                        {
-                            lineBuffer.Append(chunkText);
-                        }
-                    }
-                }
-                else if(tokensBuffer.FirstOrDefault()?.Value as string == "BT")
-                {
-                    textOutputStarted = true;
+                    InterpretPdfCommand(command.AsString(), paramList);
                 }
 
-                tokensBuffer.Clear();
+                paramList.Clear();
             }
+            while(command != null);
         }
 
-        private string GetTextFromOutputInstructions(IEnumerable<Token> lineTokens)
+        private void InterpretPdfCommand(string commandName, IList<IPdfTerm> cmdParams)
         {
-            var paramTokens = new List<Token>();
-
-            foreach(var token in lineTokens)
+            switch(commandName)
             {
-                if(token.Type == TokenType.Id)
-                {
-                    string instructionName = token.Value as string;
-
-                    if(instructionName == "Tf")
-                    {
-                        string fontResName = paramTokens[0].Value as string;
-                        currentFont = document.Fonts[fontResName];
-                    }
-                    else if(instructionName == "TJ" || instructionName == "Tj")
-                    {
-                        return GetStringFromTextTokens(paramTokens, currentFont);
-                    }
-
-                    paramTokens.Clear();
-                }
-                else
-                {
-                    paramTokens.Add(token);
-                }
+                case "BT":
+                    // ?
+                    break;
+                case "ET":
+                    AppendCurrentTextLine();
+                    break;
+                case "Tf":
+                    SetCurrentFont(cmdParams);
+                    break;
+                case "Tj":
+                case "TJ":
+                    OutputText(cmdParams[0]);
+                    break;
             }
-
-            return null;
         }
 
-        private string GetStringFromTextTokens(IList<Token> tokens, PdfFont font)
+        private void AppendCurrentTextLine()
         {
-            var stringTokens = tokens.Where(t => {
-                return t.Type == TokenType.HexString || t.Type == TokenType.String;
+            outputLines.Add(lineBuffer.ToString());
+            lineBuffer.Clear();
+        }
+
+        private void SetCurrentFont(IList<IPdfTerm> fontSpec)
+        {
+            string fontResName = (fontSpec[0] as PdfAtom).AsString();
+            currentFont = document.Fonts[fontResName];
+        }
+
+        private void OutputText(IPdfTerm textTerms)
+        {
+            var textTermsList = textTerms switch {
+                PdfArray termsArray => textTerms as PdfArray,
+                PdfAtom textLiteral => new PdfArray { textLiteral },
+                _ => throw new Exception("Invalid term type")
+            };
+
+            var stringAtoms = textTermsList.Where(t => {
+                var atom = t as PdfAtom;
+                return atom.Type == TokenType.HexString || atom.Type == TokenType.String;
             });
-
-            if(stringTokens.Any())
+            
+            if(stringAtoms.Any())
             {
-                var textBuffer = new StringBuilder();
-
-                foreach(var token in stringTokens)
+                foreach(var atomTerm in stringAtoms)
                 {
-                    if(token.Type == TokenType.String)
+                    var atom = atomTerm as PdfAtom;
+
+                    if(atom.Type == TokenType.String)
                     {
-                        textBuffer.Append(token.Value as string);
+                        lineBuffer.Append(atom.AsString());
                     }
                     else
                     {
-                        string decodedText = font.DecodeString(token.Value as string);
-                        textBuffer.Append(decodedText);
+                        string decodedText = currentFont.DecodeString(atom.AsString());
+                        lineBuffer.Append(decodedText);
                     }
                 }
-
-                return textBuffer.ToString();
-            }
-            else
-            {
-                return null;
             }
         }
 
