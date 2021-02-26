@@ -15,4 +15,8 @@
     <Folder Include="TestPdf\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="SharpZipLib" Version="1.3.1" />
+  </ItemGroup>
+
 </Project>

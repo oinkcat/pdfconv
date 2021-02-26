@@ -12,7 +12,7 @@ namespace PdfConverter.Simple
     public class SimplePdfConverter : BasePdfConverter
     {
         private const int MaxSupportedDocMajorVersion = 1;
-        private const int MaxSupportedDocMinorVersion = 4;
+        private const int MaxSupportedDocMinorVersion = 7;
 
         private string directoryPath;
         private string baseName;

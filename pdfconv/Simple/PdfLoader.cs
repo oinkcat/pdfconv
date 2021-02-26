@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
 using System.IO;
-using System.IO.Compression;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PdfConverter.Simple.Parsing;
 using PdfConverter.Simple.Primitives;
 using PdfConverter.Simple.Structure;
+using PdfConverter.Simple.StreamDecoding;
 
 using MyReader = PdfConverter.Simple.UnbufferedStreamReader;
 
@@ -137,9 +137,9 @@ namespace PdfConverter.Simple
 
             if(hasStream)
             {
-                var compressAttrVal = newObject.GetAttributeValue<PdfAtom>("Filter");
+                var filterName = newObject.GetAttributeValue<PdfAtom>("Filter")?.AsString();
                 
-                if(compressAttrVal?.Value.Equals("FlateDecode") ?? false)
+                if(filterName != null && DecodersFactory.Instance.HasDecoder(filterName))
                 {
                     var lengthAttrVal = newObject.GetAttributeValue("Length");
 
@@ -153,7 +153,7 @@ namespace PdfConverter.Simple
                     {
                         // Load body from binary compressed data
                         int size = (int)directLength.AsNumber();
-                        var content = await ReadCompressedContent(size);
+                        var content = await ReadCompressedContent(filterName, size);
                         newObject.BinaryContent = content;
                     }
                     else
@@ -201,17 +201,14 @@ namespace PdfConverter.Simple
             return (isStreamStart, isObjectEnd);
         }
 
-        private async Task<byte[]> ReadCompressedContent(int length)
+        // Read and decompress stream contents using given compression filter
+        private async Task<byte[]> ReadCompressedContent(string filterName, int length)
         {
             var compressedBytes = new byte[length];
             await reader.BaseStream.ReadAsync(compressedBytes, 0, length);
 
-            using var buffer = new MemoryStream(compressedBytes[2..]);
-            using var decoder = new DeflateStream(buffer, CompressionMode.Decompress);
-            using var decodedData = new MemoryStream(length);
-            decoder.CopyTo(decodedData);
-
-            return decodedData.GetBuffer();
+            var decompressor = DecodersFactory.Instance.GetDecoder(filterName);
+            return decompressor.Decode(compressedBytes);
         }
 
         private async Task LoadReferencedObjects()
@@ -222,7 +219,9 @@ namespace PdfConverter.Simple
                 int objSize = (int)(double)objects[refId].ContentAs<PdfAtom>().Value;
                 
                 reader.BaseStream.Seek(objStartPos, SeekOrigin.Begin);
-                var objContent = await ReadCompressedContent(objSize);
+                var pdfObj = objects[objId];
+                string filterName = pdfObj.GetAttributeValue<PdfAtom>("Filter").AsString();
+                var objContent = await ReadCompressedContent(filterName, objSize);
                 objects[objId].BinaryContent = objContent;
             }
         }
