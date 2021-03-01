@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+using System.IO.Compression;
 
 namespace PdfConverter.Simple.StreamDecoding
 {
@@ -16,11 +16,11 @@ namespace PdfConverter.Simple.StreamDecoding
         /// <returns>Decompressed data bytes</returns>
         public byte[] Decode(byte[] inputData)
         {
-            using var compressedStream = new MemoryStream(inputData);
+            using var compressedStream = new MemoryStream(inputData[2..]);
 
-            var inflateStream = new InflaterInputStream(compressedStream);
+            var decoder = new DeflateStream(compressedStream, CompressionMode.Decompress);
             var decompressedStream = new MemoryStream();
-            inflateStream.CopyTo(decompressedStream);
+            decoder.CopyTo(decompressedStream);
             decompressedStream.Position = 0;
 
             return decompressedStream.GetBuffer();
