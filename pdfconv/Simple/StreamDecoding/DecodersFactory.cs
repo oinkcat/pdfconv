@@ -38,7 +38,9 @@ namespace PdfConverter.Simple.StreamDecoding
         private DecodersFactory()
         {
             knownDecoders = new Dictionary<string, IStreamDecoder> {
-                ["FlateDecode"] = new FlateDecoder()
+                ["FlateDecode"] = new FlateDecoder(),
+                ["LZWDecode"] = new LzwDecoder(),
+                ["ASCII85Decode"] = new ASCII85Decode()
             };
         }
 

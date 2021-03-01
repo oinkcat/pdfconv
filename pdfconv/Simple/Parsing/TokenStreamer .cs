@@ -106,7 +106,7 @@ namespace PdfConverter.Simple.Parsing
                 }
             }
 
-            return lineRead;
+            return lineRead.TrimEnd();
         }
 
         public static TokenStreamer CreateFromReader(TextReader reader)

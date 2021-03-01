@@ -19,27 +19,48 @@ namespace PdfConverter.Simple.Structure
         /// <summary>
         /// PDF page instructions
         /// </summary>
-        public IList<string> RawContent => RawObject.TextContent;
+        public List<string> RawContent { get; }
 
         // Fill page instructions stream from PDF page object
         private void PopulatePageContent(PdfObject pageObj)
         {
             var pdfObjRoot = document.ObjectRoot;
 
-            var pageContentRef = pageObj.GetAttributeValue<PdfArray>("Contents");
-            RawObject = pdfObjRoot.GetObjectByRef(pageContentRef);
+            var contentObj = pdfObjRoot.GetObjectFromAttrib(pageObj, "Contents");
 
-            if(!RawObject.HasStream)
+            if(contentObj.HasStream)
             {
-                throw new Exception("Page object contents is not a stream!");
+                AppendPageContent(contentObj);
+            }
+            else if(contentObj.Content is PdfArray contentObjRefs)
+            {
+                int numContentChunks = contentObjRefs.Count / 3;
+                for(int i = 0; i < numContentChunks; i++)
+                {
+                    var contentChunkObj = pdfObjRoot.GetObjectByRef(contentObjRefs, i);
+                    AppendPageContent(contentChunkObj);
+                }
+            }
+            else
+            {
+                throw new Exception($"Page #{RawObject.Id} content not found!");
             }
 
-            RawObject.ConvertContentToText();
+        }
+
+        // Append object contents to page contents
+        private void AppendPageContent(PdfObject contentObj)
+        {
+            contentObj.ConvertContentToText();
+            RawContent.AddRange(contentObj.TextContent);
         }
 
         public PdfPage(PdfDocument document, PdfObject pageObj)
         {
             this.document = document;
+
+            RawObject = pageObj;
+            RawContent = new List<string>();
 
             PopulatePageContent(pageObj);
         }
