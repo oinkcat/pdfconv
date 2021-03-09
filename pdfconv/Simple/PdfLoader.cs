@@ -138,8 +138,9 @@ namespace PdfConverter.Simple
             if(hasStream)
             {
                 var filterName = newObject.GetAttributeValue<PdfAtom>("Filter")?.AsString();
+                bool contentIsEncoded = filterName != null;
                 
-                if(filterName != null && DecodersFactory.Instance.HasDecoder(filterName))
+                if(contentIsEncoded && DecodersFactory.Instance.HasDecoder(filterName))
                 {
                     var lengthAttrVal = newObject.GetAttributeValue("Length");
 
