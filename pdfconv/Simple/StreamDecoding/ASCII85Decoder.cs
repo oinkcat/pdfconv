@@ -7,9 +7,11 @@ namespace PdfConverter.Simple.StreamDecoding
     /// Decodes data encoded as Base-85
     /// </summary>
     /// <remarks>Not fully implemented yet</remarks>
-    public class ASCII85Decode : IStreamDecoder
+    public class ASCII85Decoder : IStreamDecoder
     {
         private readonly int[] multipliers = { 52200625, 614125, 7225, 85, 1 };
+
+        private const char FourZerosChar = 'z';
 
         /// <summary>
         /// Decode Base-85 encoded data
@@ -21,23 +23,31 @@ namespace PdfConverter.Simple.StreamDecoding
             var decodedData = new List<byte>();
 
             uint i32Number = 0;
-            int idx = 0;
             int digitIdx = 0;
 
-            while(idx < inputData.Length)
+            foreach(byte ib in inputData)
             {
-                byte inByte = (byte)(inputData[idx++] - 33);
-                if(Char.IsWhiteSpace((char)inByte)) { continue; }
-
+                if(Char.IsWhiteSpace((char)ib)) { continue; }
+                
+                if((char)ib == FourZerosChar)
+                {
+                	for(int i = 0; i < 4; i++)
+                	{
+                		decodedData.Add(0);
+                	}
+                	continue;
+                }
+                
+                byte inByte = (byte)(ib - 33);
                 i32Number += (uint)(inByte * multipliers[digitIdx++]);
 
-                if(digitIdx == 4)
+                if(digitIdx == 5)
                 {
                     for(int i = 3; i >= 0; i--)
                     {
                         int shift = 8 * i;
-                        byte b = (byte)((i32Number & (0xff << shift)) >> shift);
-                        decodedData.Add(b);
+                        byte ob = (byte)((i32Number & (0xff << shift)) >> shift);
+                        decodedData.Add(ob);
                     }
 
                     digitIdx = 0;

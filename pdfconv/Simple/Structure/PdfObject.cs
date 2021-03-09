@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using PdfConverter.Simple.Primitives;
+using PdfConverter.Simple.StreamDecoding;
 
 namespace PdfConverter.Simple.Structure
 {
@@ -10,6 +11,8 @@ namespace PdfConverter.Simple.Structure
     /// </summary>
     public class PdfObject
     {
+        private IStreamDecoder binaryContentDecoder;
+
         // Object's attributes
         private PdfDictionary Attributes
         {
@@ -32,7 +35,7 @@ namespace PdfConverter.Simple.Structure
         /// <summary>
         /// Object's stream binary content
         /// </summary>
-        public byte[] BinaryContent { get; set; }
+        public byte[] RawStreamContent { get; set; }
 
         /// <summary>
         /// Object's stream text content
@@ -42,7 +45,7 @@ namespace PdfConverter.Simple.Structure
         /// <summary>
         /// Object body contains binary data
         /// </summary>
-        public bool HasStream => BinaryContent != null;
+        public bool HasStream => RawStreamContent != null;
 
         /// <summary>
         /// Object type
@@ -85,13 +88,28 @@ namespace PdfConverter.Simple.Structure
         public T ContentAs<T>() where T : IPdfTerm => (T)Content;
 
         /// <summary>
+        /// Set encoded content and it's decoder
+        /// </summary>
+        /// <param name="contentData">Encoded content data</param>
+        /// <param name="decoder">Content decoder</param>
+        public void SetEncodedContent(byte[] contentData, IStreamDecoder decoder)
+        {
+            RawStreamContent = contentData;
+            binaryContentDecoder = decoder;
+        }
+
+        /// <summary>
         /// Convert binary content to text lines
         /// </summary>
         public void ConvertContentToText()
         {
             if(TextContent.Count == 0)
             {
-                var textLines = Encoding.ASCII.GetString(BinaryContent).Split('\n');
+                var decodedContent = (binaryContentDecoder != null)
+                    ? binaryContentDecoder.Decode(RawStreamContent)
+                    : RawStreamContent;
+
+                var textLines = Encoding.ASCII.GetString(decodedContent).Split('\n');
                 TextContent.AddRange(textLines);
             }
         }

@@ -137,10 +137,9 @@ namespace PdfConverter.Simple
 
             if(hasStream)
             {
-                var filterName = newObject.GetAttributeValue<PdfAtom>("Filter")?.AsString();
-                bool contentIsEncoded = filterName != null;
+                bool contentIsEncoded = newObject.GetAttributeValue("Filter") != null;
                 
-                if(contentIsEncoded && DecodersFactory.Instance.HasDecoder(filterName))
+                if(contentIsEncoded)
                 {
                     var lengthAttrVal = newObject.GetAttributeValue("Length");
 
@@ -153,9 +152,8 @@ namespace PdfConverter.Simple
                     else if(lengthAttrVal is PdfAtom directLength)
                     {
                         // Load body from binary compressed data
-                        int size = (int)directLength.AsNumber();
-                        var content = await ReadCompressedContent(filterName, size);
-                        newObject.BinaryContent = content;
+                        int contentSize = (int)directLength.AsNumber();
+                        await SetEncodedContent(newObject, contentSize);
                     }
                     else
                     {
@@ -202,14 +200,15 @@ namespace PdfConverter.Simple
             return (isStreamStart, isObjectEnd);
         }
 
-        // Read and decompress stream contents using given compression filter
-        private async Task<byte[]> ReadCompressedContent(string filterName, int length)
+        // Read stream contents and allow object to be decoded on demand
+        private async Task SetEncodedContent(PdfObject pdfObj, int length)
         {
             var compressedBytes = new byte[length];
             await reader.BaseStream.ReadAsync(compressedBytes, 0, length);
 
-            var decompressor = DecodersFactory.Instance.GetDecoder(filterName);
-            return decompressor.Decode(compressedBytes);
+            string filterName = pdfObj.GetAttributeValue<PdfAtom>("Filter").AsString();
+            var decodingFilter = DecodersFactory.Instance.GetDecoder(filterName);
+            pdfObj.SetEncodedContent(compressedBytes, decodingFilter);
         }
 
         private async Task LoadReferencedObjects()
@@ -217,13 +216,11 @@ namespace PdfConverter.Simple
             foreach(int objId in references.Keys)
             {
                 (int refId, long objStartPos) = references[objId];
-                int objSize = (int)(double)objects[refId].ContentAs<PdfAtom>().Value;
+                int contentSize = (int)(double)objects[refId].ContentAs<PdfAtom>().Value;
                 
                 reader.BaseStream.Seek(objStartPos, SeekOrigin.Begin);
                 var pdfObj = objects[objId];
-                string filterName = pdfObj.GetAttributeValue<PdfAtom>("Filter").AsString();
-                var objContent = await ReadCompressedContent(filterName, objSize);
-                objects[objId].BinaryContent = objContent;
+                await SetEncodedContent(pdfObj, contentSize);
             }
         }
 

@@ -32,7 +32,9 @@ namespace PdfConverter.Simple.StreamDecoding
         /// <returns>Decoder for given filter</returns>
         public IStreamDecoder GetDecoder(string decodingFilterName)
         {
-            return knownDecoders[decodingFilterName];
+            return HasDecoder(decodingFilterName)
+                ? knownDecoders[decodingFilterName]
+                : new UnimplementedDecoder(decodingFilterName);
         }
 
         private DecodersFactory()
@@ -40,7 +42,7 @@ namespace PdfConverter.Simple.StreamDecoding
             knownDecoders = new Dictionary<string, IStreamDecoder> {
                 ["FlateDecode"] = new FlateDecoder(),
                 ["LZWDecode"] = new LzwDecoder(),
-                ["ASCII85Decode"] = new ASCII85Decode()
+                ["ASCII85Decode"] = new ASCII85Decoder()
             };
         }
 
