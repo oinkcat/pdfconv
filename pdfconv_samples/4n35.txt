@@ -1,0 +1,155 @@
+ Document Number: 81181For technical questions, contact: optocoupleranswers@vishay.com
+www.vishay.comRev. 1.2, 07-Jan-10153
+Optocoupler, Phototransistor Output, with Base Connection4N35, 4N36, 4N37Vishay Semiconductors
+ DESCRIPTIONEach optocoupler consists of gallium arsenide infrared LEDand a silicon NPN phototransistor.AGENCY APPROVALS?Underwriters laboratory file no. E52744?BSI: EN 60065:2002, EN 60950:2000?FIMKO; EN 60065, EN 60335, EN 60950 certificate no. 25156FEATURES?Isolation test voltage 5000 VRMS?Interfaces with common logic families?Input-output coupling capacitance < 0.5 pF?Industry standard dual-in-line 6 pin package?Compliant to RoHS directive 2002/95/EC and inaccordance to WEEE 2002/96/ECAPPLICATIONS?AC mains detection?Reed relay driving?Switch mode power supply feedback?Telephone ring detection?Logic ground isolation?Logic coupling with high frequency noise rejection
+i179004-5
+123
+654
+BCEACNC
+21842
+ORDER INFORMATION
+PART
+REMARKS4N35CTR > 100 %, DIP-64N36CTR > 100 %, DIP-64N37CTR > 100 %, DIP-6
+ABSOLUTE MAXIMUM RATINGS \(1\)
+PARAMETER
+TEST CONDITION
+SYMBOL
+VALUE
+UNIT
+INPUTReverse voltageVR6VForward currentIF50mASurge currentt ≤ 10 ?sIFSM1APower dissipationPdiss70mW
+OUTPUTCollector emitter breakdown voltageVCEO70VEmitter base breakdown voltageVEBO7VCollector currentIC50mAt ≤ 1 msIC100mAPower dissipationPdiss70mW
+COUPLERIsolation test voltageVISO5000VRMSCreepage≥ 7mmClearance≥ 7mmIsolation thickness between emitter and detector≥ 0.4mm
+ www.vishay.comFor technical questions, contact: optocoupleranswers@vishay.com
+Document Number: 81181154Rev. 1.2, 07-Jan-10
+4N35, 4N36, 4N37Vishay SemiconductorsOptocoupler, Phototransistor Output, with Base Connection
+ Notes\(1\)Tamb = 25 ?C, unless otherwise specified.Stresses in excess of the absolute maximum ratings can cause permanent damage to the device. Functional operation of the device is notimplied at these or any other conditions in excess of those given in the operational sections of this document. Exposure to absolutemaximum ratings for extended periods of the time can adversely affect reliability.\(2\)Refer to wave profile for soldering condditions for through hole devices \(DIP\).Notes\(1\)Tamb = 25 ?C, unless otherwise specified.Minimum and maximum values are testing requirements. Typical values are characteristics of the device and are the result of engineeringevaluation. Typical values are for information only and are not part of the testing requirements.\(2\)Indicates JEDEC registered value.
+COUPLERComparative tracking indexDIN IEC 112/VDE 0303, part 1175Isolation resistanceVIO = 500 V, Tamb = 25 ?CRIO1012ΩVIO = 500 V, Tamb = 100 ?CRIO1011ΩStorage temperatureTstg- 55 to + 150?COperating temperatureTamb- 55 to + 100?CJunction temperatureTj100?CSoldering temperature \(2\)max.10 s dip soldering: distance to seating plane≥ 1.5 mmTsld260?C
+ELECTRICAL CHARACTERISTICS \(1\)
+PARAMETER
+TEST CONDITION
+PART
+SYMBOL
+MIN.
+TYP.
+MAX.
+UNIT
+INPUTJunction capacitanceVR = 0 V, f = 1 MHzCj50pFForward voltage \(2\)IF = 10 mAVF1.31.5VIF = 10 mA, Tamb = - 55 ?CVF0.91.31.7VReverse current \(2\)VR = 6 VIR0.110?ACapacitanceVR = 0 V, f = 1 MHzCO25pF
+OUTPUTCollector emitter breakdownvoltage\(2\)IC = 1 mA4N35BVCEO30V4N36BVCEO30V4N37BVCEO30VEmitter collector breakdownvoltage\(2\)IE = 100 ?ABVECO7V
+OUTPUTCollector base breakdownvoltage \(2\)IC = 100 ?A, IB = 1 ?A4N35BVCBO70V4N36BVCBO70V4N37BVCBO70VCollector emitter leakage current \(2\)VCE = 10 V, IF = 04N35ICEO550nA4N36ICEO550nAVCE = 10 V, IF = 04N37ICEO550nAVCE = 30 V, IF = 0,Tamb = 100 ?C4N35ICEO500?A4N36ICEO500?A4N37ICEO500?ACollector emitter capacitanceVCE = 0CCE6pF
+COUPLERResistance, input output \(2\)VIO = 500 VRIO1011ΩCapacitance, input outputf = 1 MHzCIO0.6pF
+ABSOLUTE MAXIMUM RATINGS \(1\)
+PARAMETER
+TEST CONDITION
+SYMBOL
+VALUE
+UNIT
+ Document Number: 81181For technical questions, contact: optocoupleranswers@vishay.com
+www.vishay.comRev. 1.2, 07-Jan-10155
+4N35, 4N36, 4N37Optocoupler, Phototransistor Output, with Base ConnectionVishay Semiconductors
+ Note\(1\)Indicates JEDEC registered values.Note\(1\)Indicates JEDEC registered values.TYPICAL CHARACTERISTICSTamb = 25 ?C, unless otherwise speciedFig. 1 - Forward Voltage vs. Forward Current Fig. 2 - Normalized Non-Saturated and Saturated CTR vs.LED Current Fig. 3 - Normalized Non-Saturated and Saturated CTR vs.LED Current Fig. 4 - Normalized Non-Saturated and Saturated CTR vs.LED Current
+CURRENT TRANSFER RATIO
+PARAMETER
+TEST CONDITION
+PART
+SYMBOL
+MIN
+TYP.
+MAX
+UNITDC current transfer ratio \(1\)VCE = 10 V, IF = 10 mA4N35CTRDC100%4N36CTRDC100%4N37CTRDC100%VCE = 10 V, IF = 10 mA,TA = - 55 ?C to + 100 ?C4N35CTRDC4050%4N36CTRDC4050%4N37CTRDC4050%
+SWITCHING CHARACTERISTICS
+PARAMETER
+TEST CONDITION
+SYMBOL
+MIN.
+TYP.
+MAX.
+UNITSwitching time \(1\)VCC = 10 V, IC = 2 mA, RL = 100 Ωton, toff10?s
+i4n25_01
+1001010.10.70.80.91.01.11.21.31.4
+IF - Forward Current \(mA\)VF -Forward Voltage \(V\)
+TA = - 55 ?C
+TA = 25 ?C
+TA = 85 ?C
+i4n25_02
+0.00.51.01.5010100IF - LED Current \(mA\)
+NCTRNCTR\(SAT\)NCTR - Normalized CTR
+CTRCE\(sat\) = 0.4 VVCE = 10 V, IF = 10 mA, TA = 25 ?CTA = 25 ?CNormalized to:1
+i4n25_03
+1001010.10.00.51.01.5
+IF - LED Current \(mA\)NCTR - Normalized CTR
+CTRCE\(sat\) VCE = 0.4 VNCTRNCTR\(SAT\)TA = 50 ?C
+Normalized to:VCE = 10 V, IF = 10 mA, TA = 25 ?C
+i4n25_04
+1001010.10.00.51.0
+1.5
+IF - LED Current \(mA\)NCTR - Normalized CTR
+NCTRNCTR\(SAT\)TA = 70 ?C
+Normalized to:CTRCE\(sat\) VCE = 0.4 VVCE = 10 V, IF = 10 mA, TA = 25 ?C
+ www.vishay.comFor technical questions, contact: optocoupleranswers@vishay.com
+Document Number: 81181156Rev. 1.2, 07-Jan-10
+4N35, 4N36, 4N37Vishay SemiconductorsOptocoupler, Phototransistor Output, with Base Connection
+  Fig. 5 - Normalized Non-Saturated and Saturated CTR vs.LED Current Fig. 6 - Collector Emitter Current vs.Temperature and LED Current Fig. 7 - Collector Emitter Leakage Current vs. Temperature Fig. 8 - Normalized CTRcb vs. LED Current and Temperature Fig. 9 - Normalized Photocurrent vs. IF and Temperature Fig. 10 - Normalized Non-Saturated hFE vs.Base Current and Temperature
+i4n25_05
+1001010.10.00.51.01.5
+IF - LED Current \(mA\)NCTR - Normalized CTR
+NCTRNCTR\(SAT\)TA = 85 ?C
+Normalized to:
+CTRCE\(sat\) VCE = 0.4 VVCE = 10 V, IF = 10 mA, TA = 25 ?C
+i4n25_06605040302010005101520253035
+50 ?C70 ?C
+85 ?CIF - LED Current \(mA\)ICE - Collector Current \(mA\)
+25 ?C
+i4n25_07
+100806040200- 20
+10- 210- 1100101102103104105
+Tamb- Ambient Temperature \(?C\)ICEO - Collector Emitter \(nA\)
+Typical
+VCE = 10 V
+i4n25_08
+0.00.51.01.5
+25 ?C50 ?C70 ?CIF - LED Current \(mA\) NCTRcb - Normalized CTRcb0.1110100
+Normalized to:
+VCB = 9.3 V, IF = 10 mA, TA = 25 ?C
+i4n25_090.
+0.011110
+IF - LED Current \(mA\)Normalized Photocurrent0.1110100
+IF = 10 mA, TA = 25 ?C
+Nib, TA = - 20 ?CNormalized to:Nib, TA = 20 ?CNib, TA = 50 ?CNib, TA = 70 ?C
+i4n25_10
+0.40.61.01.2
+Ib - Base Current \(?A\)1101001000
+IB = 20 ?A, VCE = 10 V,TA = 25 ?C25 ?C70 ?C- 20 ?C
+NhFE - Normalized hFE
+0.8Normalized to: 
+ Document Number: 81181For technical questions, contact: optocoupleranswers@vishay.com
+www.vishay.comRev. 1.2, 07-Jan-10157
+4N35, 4N36, 4N37Optocoupler, Phototransistor Output, with Base ConnectionVishay Semiconductors
+  Fig. 11 - Normalized  hFE vs. Base Current and Temperature Fig. 12 - Propagation Delay vs. Collector Load Resistor Fig. 13 - Switching Timing Fig. 14 - Switching Schematic
+i4n25_11
+0.00.51.01.5
+25 ?C- 20 ?C50 ?C70 ?CNhFE\(sat\) - Normalized Saturated hFE1101001000
+VCE = 10 V, Ib = 20 ?ATA = 25 ?CVCE = 0.4 VIb - Base Current \(?A\)
+Normalized to:
+i4n25_12
+1101001000
+RL - Collector Load Resistor \(k\)tPLH- Propagation Delay \(?s\)2.52.01.51.00.1110100
+IF = 10 mA, TA = 25 ?CVCC = 5.0 V, Vth = 1.5 V
+tPLHtPHLtPHL - Propagation Delay \(?s\)
+i4n25_13
+IFtR= 1.5 V
+VO
+tDtStF
+tPHLtPLHVTH
+i4n25_14
+VCC = 5 Vf = 10 kHzDF = 50 %RLVOIF = 10 mA
+ www.vishay.comFor technical questions, contact: optocoupleranswers@vishay.com
+Document Number: 81181158Rev. 1.2, 07-Jan-10
+4N35, 4N36, 4N37Vishay SemiconductorsOptocoupler, Phototransistor Output, with Base Connection
+ PACKAGE DIMENSIONS in millimetersPACKAGE MARKING
+14771_27.12 ? 0.30.256.5 ? 0.31.2 ? 0.13.5 ? 0.37.62 typ.0.5 ? 0.14.5 ? 0.32.8 ? 0.154.5 ? 0.31    2   36    5    4
+7.62 to 9.5 typ.
+21764-24
+4N35V YWW 24
+Legal Disclaimer Noticewww.vishay.comVishay
+ Revision: 08-Feb-171Document Number: 91000
+Disclaimer?ALL PRODUCT, PRODUCT SPECIFICATIONS AND DATA ARE SUBJECT TO CHANGE WITHOUT NOTICE TO IMPROVE RELIABILITY, FUNCTION OR DESIGN OR OTHERWISE. Vishay Intertechnology, Inc., its affiliates, agents, and employees, and all persons acting on its or their behalf \(collectively, ?Vishay?\), disclaim any and all liability for any errors, inaccuracies or incompleteness contained in any datasheet or in any other disclosure relating to any product.Vishay makes no warranty, representation or guarantee regarding the suitability of the products for any particular purpose or the continuing production of any product.  To the maximum extent permitted by applicable law, Vishay disclaims \(i\) any and all liability arising out of the application or use of any product, \(ii\) any and all liability, including without limitation special, consequential or incidental damages, and \(iii\) any and all implied warranties, including warranties of fitness for particular purpose, non-infringement and merchantability. Statements regarding the suitability of products for certain types of applications are based on Vishay?s knowledge of typical requirements that are often placed on Vishay products in generic applications.  Such statements are not binding statements about the suitability of products for a particular application.  It is the customer?s responsibility to validate that a particular product with the properties described in the product specification is suitable for use in a particular application. Parameters provided in datasheets and / or specifications may vary in different applications and performance may vary over time.  All operating parameters, including typical parameters, must be validated for each customer application by the customer?s technical experts.  Product specifications do not expand or otherwise modify Vishay?s terms and conditions of purchase, including but not limited to the warranty expressed therein.Except as expressly indicated in writing, Vishay products are not designed for use in medical, life-saving, or life-sustaining applications or for any other application in which the failure of the Vishay product could result in personal injury or death. Customers using or selling Vishay products not expressly indicated for use in such applications do so at their own risk. Please contact authorized Vishay personnel to obtain written terms and conditions regarding products designed for such applications.No license, express or implied, by estoppel or otherwise, to any intellectual property rights is granted by this document or by any conduct of Vishay.  Product names and markings noted herein may be trademarks of their respective owners.? 2017 VISHAY INTERTECHNOLOGY, INC. ALL RIGHTS RESERVED
