@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using Xunit;
 using PdfConverter.Simple.Parsing;
 using PdfConverter.Simple.Primitives;
+using System;
+using System.Diagnostics;
 
 namespace PdfConverter.Tests
 {
@@ -93,6 +95,9 @@ namespace PdfConverter.Tests
             var parser = new ObjectParser(streamer);
 
             IPdfTerm term = parser.ReadSingleObject();
+
+            Console.WriteLine($"DEBUG: {term.ToString()}");
+
             Assert.IsType<PdfArray>(term);
 
             var firstArrayElement = (term as PdfArray)[0];
