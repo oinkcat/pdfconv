@@ -1,9 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Xunit;
 using PdfConverter.Simple.Parsing;
 using PdfConverter.Simple.Primitives;
-using System;
-using System.Diagnostics;
 
 namespace PdfConverter.Tests
 {
@@ -90,14 +89,11 @@ namespace PdfConverter.Tests
         [Fact]
         public void TestObjectTermsParsing()
         {
-            var sourceList = new List<string>(ComplexObjectContent.Split("\r\n"));
+            var sourceList = new List<string>(ComplexObjectContent.Split(Environment.NewLine));
             var streamer = TokenStreamer.CreateFromList(sourceList);
             var parser = new ObjectParser(streamer);
 
             IPdfTerm term = parser.ReadSingleObject();
-
-            Console.WriteLine($"DEBUG: {term.ToString()}");
-
             Assert.IsType<PdfArray>(term);
 
             var firstArrayElement = (term as PdfArray)[0];
